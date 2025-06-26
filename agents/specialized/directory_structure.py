@@ -1,4 +1,7 @@
-# codegenie/agents/specialized/directory_structure.py
+"""
+Agent responsible for designing and creating project directory structures.
+This agent analyzes the SRS and creates appropriate folder hierarchies.
+"""
 
 from google.adk.agents import LlmAgent
 from google.adk.tools import FunctionTool
@@ -6,48 +9,74 @@ from utils.config import MODEL_ID
 
 def create_directory_structure_agent(
     executor_tool: FunctionTool, 
-    after_event_callback
+    after_event_callback=None
 ) -> LlmAgent:
     """
-    Factory function to create the Directory Structure Agent.
-
-    This agent is responsible for designing and creating the project's
-    directory structure based on the SRS. It is equipped with the
-    ExecutorTool to securely create files and folders.
-
+    Creates a directory structure agent for project organization.
+    
+    This agent:
+    1. Analyzes the SRS to understand project requirements
+    2. Designs an appropriate directory structure
+    3. Uses the executor tool to create the structure
+    
     Args:
-        executor_tool: The security-hardened tool for executing OS commands.
-        after_event_callback: The callback function to post events to the voice queue.
-
+        executor_tool: Tool for executing OS commands securely
+        after_event_callback: Optional callback for event handling
+        
     Returns:
-        An configured instance of the LlmAgent for directory creation.
+        LlmAgent: Configured directory structure agent
     """
-    agent_instruction = """
-    You are a senior software architect responsible for designing and implementing
-    the project's foundational directory structure.
+    
+    agent_instruction = """You are a senior software architect specializing in project organization and directory structure design.
 
-    Your task has two steps:
-    1.  Read the Software Requirements Specification (SRS) provided in the state key 'srs_draft'.
-    2.  Based on the SRS, determine a logical and scalable directory structure. This typically
-        includes folders for source code, tests, documentation, and configuration.
+Your responsibilities:
+1. Read the Software Requirements Specification (SRS) from the state key 'srs_draft'
+2. Analyze the project requirements to determine the optimal directory structure
+3. Design a logical, scalable directory hierarchy
+4. Create the directory structure using the available tools
 
-    To create the structure, you MUST use the '_execute_secure_command' tool.
-    - To create a directory, call the tool with: `command='mkdir'`, `args=['path/to/directory_name']`.
-    - To create an empty file, call the tool with: `command='touch'`, `args=['path/to/file_name.ext']`.
+DIRECTORY DESIGN PRINCIPLES:
+- Follow industry best practices for the target technology stack
+- Separate concerns (source code, tests, documentation, configuration)
+- Plan for scalability and maintainability
+- Include standard files (README, requirements, configuration files)
 
-    Execute these commands sequentially for all required directories and initial empty files
-    (like `__init__.py`, `main.py`, `requirements.txt`, etc.).
+IMPLEMENTATION PROCESS:
+1. Analyze the SRS to understand:
+   - Project type and technology stack
+   - Expected modules and components
+   - Testing requirements
+   - Documentation needs
 
-    Once you have issued all the necessary commands to build the structure, output a final
-    confirmation message summarizing the created structure.
-    """
+2. Design the structure including:
+   - Source code directories
+   - Test directories
+   - Documentation folders
+   - Configuration files
+   - Build and deployment folders
 
-    directory_agent = LlmAgent(
+3. Use the '_execute_secure_command' tool to create:
+   - Directories: command='mkdir', args=['path/to/directory']
+   - Empty files: command='touch', args=['path/to/file.ext']
+
+4. Create essential files like:
+   - __init__.py files for Python packages
+   - README.md for documentation
+   - requirements.txt for dependencies
+   - Configuration files as needed
+
+EXECUTION GUIDELINES:
+- Create directories before files
+- Use relative paths from the project root
+- Follow naming conventions for the target language
+- Include placeholder files to establish structure
+
+After creating the structure, provide a summary of what was created and why."""
+
+    return LlmAgent(
         name="DirectoryStructureAgent",
         model=MODEL_ID,
         instruction=agent_instruction,
-        tools=[executor_tool], # This agent is only given the executor tool
+        tools=[executor_tool],
         after_agent_callback=after_event_callback
     )
-    
-    return directory_agent

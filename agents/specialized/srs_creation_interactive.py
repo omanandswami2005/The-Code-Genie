@@ -1,40 +1,39 @@
-from typing import AsyncGenerator
-from google.adk.agents import LlmAgent, LoopAgent, BaseAgent
-from google.adk.agents.invocation_context import InvocationContext
-from google.adk.events import Event, EventActions
-from utils.config import MODEL_ID
+"""
+Interactive SRS creation agent using a loop for iterative refinement.
+This agent manages the complete SRS creation workflow with user feedback.
+"""
 
-class UserApprovalChecker(BaseAgent):
-    """Checks if the user has approved the SRS to terminate the loop."""
-    name: str = "UserApprovalChecker"
+from google.adk.agents import LoopAgent
+from agents.specialized.srs_writer import create_srs_writer_agent
+from agents.specialized.approval_checker import create_approval_checker
 
-    async def _run_async_impl(self, ctx: InvocationContext) -> AsyncGenerator[Event, None]:
-        """Checks the session state for the 'srs_approved' flag."""
-        is_approved = ctx.session.state.get("srs_approved", False)
+def create_srs_creation_agent_interactive(after_event_callback=None) -> LoopAgent:
+    """
+    Creates an interactive SRS creation agent that loops until user approval.
+    
+    This agent implements the iterative SRS refinement process:
+    1. SRS Writer creates/refines the specification
+    2. Approval Checker determines if user has approved
+    3. Loop continues until approval is received
+    
+    Args:
+        after_event_callback: Optional callback for event handling
         
-        status_msg = f"Checking for approval... Current state: {is_approved}"
-        print(f"[{self.name}] {status_msg}")
-
-        if is_approved:
-            print(f"[{self.name}] Approval found! Escalating to exit loop.")
-            yield Event(author=self.name, content=f"Approval received. Continuing workflow.")
-        
-        yield Event(author=self.name, actions=EventActions(escalate=is_approved))
-
-def create_srs_creation_agent_interactive() -> LoopAgent:
-    """Factory to create the interactive SRS Creation loop agent."""
-    srs_writer = LlmAgent(
-        name="SRSWriter",
-        model=MODEL_ID,
-        instruction="""You are an expert technical writer. Based on the user's request in the state 'initial_prompt' and any previous 'srs_draft', refine and generate a Software Requirements Specification (SRS) in Markdown. Store the output in the state key 'srs_draft'.""",
-        output_key="srs_draft",
-    )
-
-    approval_checker = UserApprovalChecker()
-
+    Returns:
+        LoopAgent: Configured interactive SRS creation agent
+    """
+    
+    # Create the SRS writer agent
+    srs_writer = create_srs_writer_agent(after_event_callback=after_event_callback)
+    
+    # Create the approval checker
+    approval_checker = create_approval_checker()
+    
+    # Create the loop agent that coordinates the iterative process
     srs_loop = LoopAgent(
         name="SRSCreationLoop",
         sub_agents=[srs_writer, approval_checker],
-        max_iterations=5 
+        max_iterations=10  # Prevent infinite loops
     )
+    
     return srs_loop

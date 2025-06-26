@@ -3,43 +3,335 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CodeGenie - Interactive SRS Approval</title>
-    <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+    <title>CodeGenie - Automated Software Development</title>
     <style>
-        body { max-width: 960px; margin: 2rem auto; }
-        #chat-window {
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            padding: 1rem;
-            min-height: 400px;
-            white-space: pre-wrap; /* Preserve markdown formatting */
-            background-color: #f9f9f9;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        #approve-button {
-            display: none; /* Hidden by default */
-            margin-top: 1rem;
-            background-color: #4CAF50;
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header h1 {
             color: white;
-            border-color: #4CAF50;
+            font-size: 1.8rem;
+            font-weight: 600;
         }
-        .user-prompt { font-style: italic; color: #555; }
-        .agent-response { color: #005a9c; }
-        .system-status { font-weight: bold; color: #d9534f; }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 0.5rem;
+        }
+
+        .main-container {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            padding: 1rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            background: rgba(103, 126, 234, 0.1);
+            padding: 1rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .panel-header h2 {
+            color: #4a5568;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .srs-content {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            background: #f8f9fa;
+        }
+
+        .srs-content pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-window {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            max-height: 500px;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            border-radius: 8px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .message strong {
+            color: #4a5568;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .user-prompt {
+            color: #2d3748;
+            font-style: italic;
+            background: #e6fffa;
+            padding: 0.5rem;
+            border-radius: 4px;
+            border-left: 4px solid #38b2ac;
+        }
+
+        .agent-response {
+            color: #2b6cb0;
+            background: #ebf8ff;
+            padding: 0.5rem;
+            border-radius: 4px;
+            border-left: 4px solid #3182ce;
+        }
+
+        .system-status {
+            color: #38a169;
+            font-weight: 500;
+            background: #f0fff4;
+            padding: 0.5rem;
+            border-radius: 4px;
+            border-left: 4px solid #48bb78;
+        }
+
+        .user-approval {
+            color: #d69e2e;
+            font-weight: 500;
+            background: #fffbeb;
+            padding: 0.5rem;
+            border-radius: 4px;
+            border-left: 4px solid #ed8936;
+        }
+
+        .error-message {
+            color: #e53e3e;
+            font-weight: 500;
+            background: #fed7d7;
+            padding: 0.5rem;
+            border-radius: 4px;
+            border-left: 4px solid #fc8181;
+        }
+
+        .input-section {
+            padding: 1rem;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            background: white;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        #prompt-input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        #prompt-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        #approve-button {
+            display: none;
+        }
+
+        .placeholder-text {
+            color: #a0aec0;
+            font-style: italic;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+                padding: 0.5rem;
+            }
+            
+            .header {
+                padding: 1rem;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Scrollbar styling */
+        .chat-window::-webkit-scrollbar,
+        .srs-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-window::-webkit-scrollbar-track,
+        .srs-content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .chat-window::-webkit-scrollbar-thumb,
+        .srs-content::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+
+        .chat-window::-webkit-scrollbar-thumb:hover,
+        .srs-content::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
     </style>
 </head>
 <body>
-    <header>
-        <h1>CodeGenie - Interactive SRS Approval</h1>
-        <p>Enter a project idea, review the agent-generated SRS, and click "Approve" to continue.</p>
+    <header class="header">
+        <h1>🚀 CodeGenie</h1>
+        <p>Automated Software Development System - Interactive SRS Creation & Project Generation</p>
     </header>
 
-    <main>
-        <div id="chat-window">Welcome! Please enter your project prompt below.</div>
-        <hr>
-        <input type="text" id="prompt-input" placeholder="e.g., A python flask app for a to-do list">
-        <button id="send-button">Generate SRS</button>
-        <button id="approve-button">Approve SRS and Continue Workflow</button>
-    </main>
+    <div class="main-container">
+        <!-- Left Panel: SRS Display -->
+        <div class="panel">
+            <div class="panel-header">
+                <h2>📋 Software Requirements Specification</h2>
+            </div>
+            <div class="srs-content" id="srs-display">
+                <div class="placeholder-text">
+                    Your generated SRS will appear here after you submit a project description.
+                    <br><br>
+                    The AI agent will create a comprehensive Software Requirements Specification
+                    based on your input, which you can then review and approve.
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Chat Interface -->
+        <div class="panel">
+            <div class="panel-header">
+                <h2>💬 Chat with CodeGenie</h2>
+            </div>
+            <div class="chat-container">
+                <div class="chat-window" id="chat-window">
+                    <div class="message">
+                        <strong>CodeGenie:</strong>
+                        <div class="system-status">
+                            Welcome to CodeGenie! 🎉
+                            <br><br>
+                            I'm your AI-powered software development assistant. Describe your project idea below, and I'll:
+                            <br>
+                            • Generate a comprehensive Software Requirements Specification (SRS)
+                            • Create the project directory structure
+                            • Generate code for your application
+                            <br><br>
+                            Start by describing what you want to build!
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="input-section">
+                    <div class="input-group">
+                        <input 
+                            type="text" 
+                            id="prompt-input" 
+                            placeholder="e.g., A Python Flask web app for managing a personal task list with user authentication..."
+                        >
+                        <button id="send-button" class="btn btn-primary">Generate SRS</button>
+                    </div>
+                    <button id="approve-button" class="btn btn-success">✅ Approve SRS & Continue Workflow</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="/static/app.js"></script>
 </body>

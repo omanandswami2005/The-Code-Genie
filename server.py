@@ -1,3 +1,8 @@
+"""
+FastAPI server for CodeGenie interactive interface.
+Handles WebSocket connections and agent orchestration.
+"""
+
 import json
 import uuid
 from fastapi import FastAPI, WebSocket, Request, WebSocketDisconnect
@@ -8,133 +13,205 @@ from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from google.genai.types import Content, Part
 
-from agents.specialized.srs_creation_interactive import create_srs_creation_agent_interactive
+from agents.coordinator import create_codegenie_coordinator, default_event_callback
 
 # --- FastAPI App Setup ---
-app = FastAPI()
+app = FastAPI(title="CodeGenie", description="Automated Software Development System")
 
-# Mounts the 'static' directory under the '/static' URL path
+# Mount static files and templates
 app.mount("/static", StaticFiles(directory="static"), name="static")
-
-# Locates the 'templates' directory for rendering HTML
 templates = Jinja2Templates(directory="templates")
 
-
 # --- ADK Setup ---
-# A global session service can be shared among runners
 session_service = InMemorySessionService()
-
-# In-memory storage for active sessions. In production, this could be Redis.
 active_sessions = {}
 
 def get_agent_for_session():
-    """Builds the agent hierarchy for a new session."""
-    return create_srs_creation_agent_interactive()
+    """Creates the agent hierarchy for a new session."""
+    return create_codegenie_coordinator(after_event_callback=default_event_callback)
 
-
-# --- Main HTML Route ---
+# --- Routes ---
 @app.get("/")
 async def get_index(request: Request):
-    """Serves the main index.html file."""
+    """Serves the main application interface."""
     return templates.TemplateResponse("index.html", {"request": request})
 
-# --- WebSocket Route ---
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
-    """Handles a single client's WebSocket connection and agent interaction."""
+    """
+    Handles WebSocket connections for real-time agent interaction.
+    
+    This endpoint manages:
+    - Session creation and cleanup
+    - Message routing between UI and agents
+    - Real-time streaming of agent responses
+    - User approval workflow
+    """
     await websocket.accept()
     session_id = str(uuid.uuid4())
-    print(f"Client connected. Creating session_id: {session_id}")
+    print(f"🔗 Client connected. Session ID: {session_id}")
     
-    # Each connection gets its own runner and agent instance
-    root_agent = get_agent_for_session()
-    runner = Runner(agent=root_agent, app_name="CodeGenieInteractive", session_service=session_service)
-    
-    # Create and store the ADK session object
-    adk_session = await session_service.create_session(user_id=session_id, session_id=session_id, app_name="CodeGenieInteractive")
-    adk_session.state["srs_approved"] = False
-    
-    active_sessions[session_id] = {"runner": runner, "session": adk_session}
-
     try:
-        # Loop indefinitely to handle multiple messages from the same client
+        # Initialize agent hierarchy and session
+        root_agent = get_agent_for_session()
+        runner = Runner(
+            agent=root_agent, 
+            app_name="CodeGenieInteractive", 
+            session_service=session_service
+        )
+        
+        # Create ADK session
+        adk_session = await session_service.create_session(
+            user_id=session_id, 
+            session_id=session_id, 
+            app_name="CodeGenieInteractive"
+        )
+        adk_session.state["srs_approved"] = False
+        
+        # Store session
+        active_sessions[session_id] = {
+            "runner": runner, 
+            "session": adk_session
+        }
+        
+        print(f"✅ Session {session_id} initialized successfully")
+        
+        # Main message handling loop
         while True:
-            # Wait for a message from the client (e.g., prompt or approval)
+            # Wait for client message
             data = await websocket.receive_text()
             message = json.loads(data)
-            print(f"Received from client {session_id}: {message}")
+            print(f"📨 Received from {session_id}: {message}")
 
             current_session = active_sessions[session_id]["session"]
             
             if message['type'] == 'prompt':
-                # Update state with the initial prompt from the user
-                current_session.state['initial_prompt'] = message['content']
-                
-                # Use the asynchronous runner.run_async() method
-                # This returns an async generator that we can loop over.
-                events = runner.run_async(session_id=current_session.id, user_id=session_id, new_message=Content(parts=[Part(text=message['content'])]))
-
-                async for event in events:
-                    print(f"[AGENT TO CLIENT]: {event}")
-                    if event.turn_complete or event.interrupted:
-                        message = {
-                            "turn_complete": event.turn_complete,
-                            "interrupted": event.interrupted,
-                        }
-                        print(message)
-                        await websocket.send_text(json.dumps(message))
-                        print(f"[AGENT TO CLIENT]: {message}")
-                        continue
-                    # Read the Content and its first Part
-                    part: Part = (
-                        event.content and event.content.parts and event.content.parts[0]
-                    )
-                    if not part:
-                        continue
-                    
-                    # If it's text and a parial text, send it
-                    if part.text and event.partial:
-                        message = {
-                            "mime_type": "text/plain",
-                            "data": part.text
-                        }
-                        print(message)
-                        await websocket.send_text(json.dumps(message))
-                        print(f"[AGENT TO CLIENT]: text/plain: {message}")
-
-                # After the agent's turn is complete, the state will be updated.
-                srs_draft = current_session.state.get("srs_draft", "Agent did not produce a draft.")
-                
-                # Send the final generated SRS back to the UI
-                await websocket.send_text(json.dumps({"type": "srs_draft", "content": srs_draft}))
-
+                await handle_prompt_message(websocket, runner, current_session, message, session_id)
             elif message['type'] == 'approve':
-                # User clicked approve
-                current_session.state['srs_approved'] = True
-                await websocket.send_text(json.dumps({"type": "status", "content": "Approval received! Resuming agent workflow..."}))
-                
-                # Run the agent AGAIN with run_async. This time it will see the approval and complete.
-                events = runner.run_async(session_id=current_session.id, user_id=session_id, new_message=Content(parts=[Part(text="Please proceed.")]))
-                async for event in events:
-                    pass # We just need the loop to complete
-
-                final_response = "Workflow complete! The loop agent has finished."
-                
-                await websocket.send_text(json.dumps({"type": "status", "content": final_response}))
+                await handle_approval_message(websocket, runner, current_session, session_id)
+            else:
+                print(f"⚠️ Unknown message type: {message['type']}")
 
     except WebSocketDisconnect:
-        print(f"Client {session_id} disconnected.")
+        print(f"🔌 Client {session_id} disconnected")
     except Exception as e:
-        print(f"An unexpected error occurred in session {session_id}: {e}")
+        print(f"❌ Error in session {session_id}: {e}")
+        try:
+            await websocket.send_text(json.dumps({
+                "type": "error", 
+                "content": f"An error occurred: {str(e)}"
+            }))
+        except:
+            pass
     finally:
-        # Clean up the session from memory when the connection closes
+        # Cleanup session
         if session_id in active_sessions:
             del active_sessions[session_id]
-            print(f"Session {session_id} cleaned up.")
+            print(f"🧹 Session {session_id} cleaned up")
 
+async def handle_prompt_message(websocket: WebSocket, runner: Runner, session, message: dict, session_id: str):
+    """
+    Handles user prompt messages and streams agent responses.
+    
+    Args:
+        websocket: WebSocket connection
+        runner: ADK runner instance
+        session: ADK session object
+        message: User message data
+        session_id: Session identifier
+    """
+    # Store user prompt in session state
+    session.state['initial_prompt'] = message['content']
+    
+    print(f"🤖 Starting agent processing for session {session_id}")
+    
+    # Run agent with streaming
+    events = runner.run_async(
+        session_id=session.id, 
+        user_id=session_id, 
+        new_message=Content(parts=[Part(text=message['content'])])
+    )
+
+    # Stream agent responses
+    async for event in events:
+        try:
+            # Handle turn completion
+            if event.turn_complete or event.interrupted:
+                completion_message = {
+                    "type": "turn_complete",
+                    "turn_complete": event.turn_complete,
+                    "interrupted": event.interrupted,
+                }
+                await websocket.send_text(json.dumps(completion_message))
+                continue
+            
+            # Handle partial text responses
+            if event.content and event.content.parts:
+                part = event.content.parts[0]
+                if part.text and event.partial:
+                    text_message = {
+                        "type": "partial_text",
+                        "data": part.text
+                    }
+                    await websocket.send_text(json.dumps(text_message))
+                    
+        except Exception as e:
+            print(f"❌ Error processing event: {e}")
+
+    # Send final SRS draft
+    srs_draft = session.state.get("srs_draft", "No SRS draft was generated.")
+    await websocket.send_text(json.dumps({
+        "type": "srs_draft", 
+        "content": srs_draft
+    }))
+    
+    print(f"📋 SRS draft sent to client {session_id}")
+
+async def handle_approval_message(websocket: WebSocket, runner: Runner, session, session_id: str):
+    """
+    Handles user approval and continues the workflow.
+    
+    Args:
+        websocket: WebSocket connection
+        runner: ADK runner instance
+        session: ADK session object
+        session_id: Session identifier
+    """
+    # Set approval flag
+    session.state['srs_approved'] = True
+    
+    await websocket.send_text(json.dumps({
+        "type": "status", 
+        "content": "✅ SRS approved! Continuing workflow..."
+    }))
+    
+    print(f"✅ SRS approved for session {session_id}, continuing workflow")
+    
+    # Continue agent execution
+    events = runner.run_async(
+        session_id=session.id, 
+        user_id=session_id, 
+        new_message=Content(parts=[Part(text="Please proceed with the approved SRS.")])
+    )
+    
+    # Process continuation events
+    async for event in events:
+        if event.content and event.content.parts:
+            part = event.content.parts[0]
+            if part.text and not event.partial:
+                await websocket.send_text(json.dumps({
+                    "type": "workflow_update",
+                    "content": part.text
+                }))
+
+    # Send completion message
+    await websocket.send_text(json.dumps({
+        "type": "status", 
+        "content": "🎉 Workflow phase completed! Ready for next steps."
+    }))
 
 if __name__ == '__main__':
     import uvicorn
-    print("Starting CodeGenie Interactive Server with FastAPI and Uvicorn...")
-    print("Open http://127.0.0.1:8000 in your browser.")
+    print("🚀 Starting CodeGenie Interactive Server...")
+    print("🌐 Open http://127.0.0.1:8000 in your browser")
     uvicorn.run(app, host="0.0.0.0", port=8000)

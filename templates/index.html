@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeGenie - Interactive SRS Approval</title>
+    <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+    <style>
+        body { max-width: 960px; margin: 2rem auto; }
+        #chat-window {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 1rem;
+            min-height: 400px;
+            white-space: pre-wrap; /* Preserve markdown formatting */
+            background-color: #f9f9f9;
+        }
+        #approve-button {
+            display: none; /* Hidden by default */
+            margin-top: 1rem;
+            background-color: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
+        .user-prompt { font-style: italic; color: #555; }
+        .agent-response { color: #005a9c; }
+        .system-status { font-weight: bold; color: #d9534f; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>CodeGenie - Interactive SRS Approval</h1>
+        <p>Enter a project idea, review the agent-generated SRS, and click "Approve" to continue.</p>
+    </header>
+
+    <main>
+        <div id="chat-window">Welcome! Please enter your project prompt below.</div>
+        <hr>
+        <input type="text" id="prompt-input" placeholder="e.g., A python flask app for a to-do list">
+        <button id="send-button">Generate SRS</button>
+        <button id="approve-button">Approve SRS and Continue Workflow</button>
+    </main>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+Your system aims to automate software development with user oversight:
+User Interface: A ChatGPT-like interface with a dynamic .md document on the left and
+chat on the right.
+SRS Creation: Agents create an SRS-like document in . md format, refined iteratively
+based on user input, to guide code generation and track progress.
+Directory Structure: Agents design a full directory structure in .md, approved by the
+user, then implemented using Linux/OS terminal commands.
+Code Generation: A Divider Agent splits the structure into parts, and multiple Code
+Generator Agents produce code in parallel, with explanations fed to a Voice Agent.
+Execution: An Executor Agent runs OS commands to execute the code securely.
+Updates: An Updater Agent modifies code based on new user requirements, re-dividing
+work if needed.
+User Inputs: A User Input Taker Agent collects specifics like API keys or database URLs.
+Voice Feedback: A Voice Agent provides asynchronous updates and code explanations,
+possibly using a queue.
+
+1. SRS and Directory Structure in .md
+Loop Hole: Using.md for both SRS and structure is user-friendly but inefficient for
+agents to parse and track programmatically.
+Improvement: Use a dual-format approach:
+Generate a machine-readable format (e.g., JSON) for agents to process and track
+dependencies.
+Render a human-readable .md version for the user interface.
+Example: The Planner Agent creates a JSON SRS, and a separate agent converts it to
+.md for display.
+
+2. Directory Structure Creation
+Loop Hole: Direct OS commands (e.g., mkdir on Linux) lack portability and security.
+Improvement:
+Use a platform-agnostic library (e.g., Python's os or pathlib) to create directories,
+ensuring compatibility across Linux, Windows, etc.
+Add a security layer: Validate commands to prevent malicious or erroneous
+operations (e.g., deleting system files).
+
+3. Code Generation
+Loop Hole: Parallel code generation risks inconsistencies (e.g., overlapping variable
+names or conflicting logic).
+Improvement:
+The Divider Agent should build a dependency graph to identify independent
+modules, ensuring parallel agents don't clash.
+Standardize code conventions (e.g., naming, formatting) across agents using a
+shared configuration.
+
+4. Executor Agent
+Loop Hole: Running OS commands directly is a security risk, especially with user inputs.
+Improvement:
+Implement a whitelist of allowed commands and sanitize inputs.
+Log all executed commands for auditing and debugging.
+
+5. Updater Agent
+Loop Hole: Automatic updates might overwrite user edits or cause conflicts.
+Improvement:
+Integrate a lightweight version control system (e.g., Git-like diffs) to track changes
+and allow user review before merging updates.
+The Updater Agent could suggest changes as "diffs" inthe .md document for
+approval.
+
+6. Voice Agent
+Loop Hole: Asynchronous updates could overwhelm users with too many messages.
+Improvement:
+Use a priority queue: High-priority updates (e.g., errors) are spoken immediately,
+while low-priority ones (e.g., progress) are batched or summarized.
+Allow users to toggle verbosity (e.g., "silent mode" vs. "detailed explanations").
+
+ New Features
+1. Testing Agent
+Purpose: Generate and run unit tests for the code to ensure functionality and catch bugs
+early.
+Implementation: After code generation, this agent creates test files (e.g.,
+test_main. py ) and runs them via the Executor Agent.
+
+2. Documentation Agent
+Purpose: Auto-generate documentation (e.g., README, API docs) based on the SRS and
+code.
+
+3. Error Handling Agent
+Purpose: Monitor execution logs, detect errors, and suggest fixes or alert the user.
+Implementation: Parses output from the Executor Agent and proposes solutions (e.g.,
+"Missing import: add import os ").
+
+4. Version control agent
+(and more for/with scalability)
+
+Leveraging Google ADK Capabilities
+Agent Communication: Use ADK's protocols for seamless data sharing between agents
+(e.g., Divider Agent sends context to Code Generator Agents).
+Tool Integration: Connect to external APIs (e.g. Al
+models for code generation) via ADK's tool support.

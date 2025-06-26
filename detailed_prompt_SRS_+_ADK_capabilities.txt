@@ -1,0 +1,2175 @@
+Software Requirements Specification (SRS)
+For CodeGenie: Automated Software Development System
+Version 1.1
+Prepared by: Omanand Swami
+Date: June 26, 2025
+
+1. Introduction
+1.1 Purpose
+This document outlines the requirements for CodeGenie, an automated software development system designed to create software projects or any project based on user requirements. The system uses a chat interface to interact with users, automating the process of requirement gathering, code generation, execution, and maintenance, with real-time voice feedback for enhanced user interaction.
+1.2 Scope
+CodeGenie will:
+
+Generate and refine a Software Requirements Specification (SRS) iteratively based on user input.
+Design and implement a project directory structure.
+Generate code in parallel for independent modules.
+Execute code securely using OS commands.
+Update code based on new requirements.
+Collect sensitive user inputs (e.g., API keys) securely.
+Provide voice feedback on progress, code explanations, and agent activities.
+Include testing, documentation, error handling, and version control features.
+
+1.3 Definitions, Acronyms, and Abbreviations
+
+SRS: Software Requirements Specification
+ADK: Agent Development Kit (Google ADK assumed)
+JSON: JavaScript Object Notation
+Markdown (.md): Lightweight markup language for human-readable documents
+CRUD: Create, Read, Update, Delete
+CodeGenie: The name of the automated software development system
+
+1.4 References
+
+Google ADK Documentation (for agent communication and tool integration)
+
+1.5 Overview
+This document includes an overall description, specific functional and non-functional requirements, system architecture, user interface details, implementation notes, testing, deployment, and maintenance plans.
+
+2. Overall Description
+2.1 Product Perspective
+CodeGenie is a standalone tool to automate software development, enabling rapid project creation for developers, project managers, or non-technical users with basic project knowledge. It leverages a chat interface and voice feedback to enhance usability and provide real-time updates.
+2.2 Product Functions
+
+SRS Creation: Generate and refine an SRS based on user input.
+Directory Structure Design: Create and implement a project directory structure.
+Code Generation: Produce code in parallel with explanations.
+Code Execution: Run generated code securely.
+Code Updates: Modify code based on new requirements.
+User Input Collection: Securely gather specific inputs.
+Voice Feedback: Provide asynchronous updates, code explanations, and feedback from all agents via a processing queue.
+Testing: Generate and run unit tests.
+Documentation: Auto-generate project documentation.
+Error Handling: Monitor and address execution errors.
+Version Control: Manage project versions.
+
+2.3 User Characteristics
+Users are expected to understand basic project requirements and interact via a chat interface. No advanced technical expertise is required, though familiarity with software development is beneficial. Users can leverage voice feedback for intuitive interaction.
+2.4 Constraints
+
+Security must be ensured for OS command execution and sensitive data handling.
+The system must be portable across operating systems (Linux, Windows, macOS).
+Voice feedback must not degrade system performance or overwhelm users.
+
+2.5 assumptions and Dependencies
+
+Assumes availability of Python and related libraries on the user's system.
+Depends on Google ADK for agent communication and tool integration.
+Assumes a speech synthesis system is available for voice feedback.
+
+
+3. Specific Requirements
+3.1 Functional Requirements
+3.1.1 SRS Creation
+
+The system shall provide a chat interface for users to specify project requirements.
+The SRS Creation Agent shall generate an initial SRS in JSON format for machine processing.
+The system shall render the JSON SRS into a human-readable markdown (.md) document for display.
+Users shall review and provide feedback via the chat interface.
+The SRS Creation Agent shall refine the SRS iteratively based on user feedback.
+
+3.1.2 Directory Structure Design
+
+The Directory Structure Agent shall design a full project directory structure based on the SRS.
+The structure shall be presented in markdown for user approval.
+Upon approval, the system shall implement the structure using platform-agnostic libraries (e.g., Python’s os or pathlib).
+All directory creation commands shall be validated to prevent security risks (e.g., unauthorized file deletion).
+The Voice Agent shall provide audio updates on directory structure creation progress and completion.
+
+3.1.3 Code Generation
+
+The Divider Agent shall analyze the SRS and directory structure to build a dependency graph.
+It shall split the work into independent modules for parallel processing.
+Multiple Code Generator Agents shall produce code for each module concurrently.
+Code shall adhere to standardized conventions (e.g., naming, formatting) defined in a shared configuration.
+Explanations of the generated code shall be sent to the Voice Agent for real-time audio narration, detailing code purpose and structure.
+
+3.1.4 Code Execution
+
+The Executor Agent shall execute the generated code using OS commands.
+The system shall maintain a whitelist of allowed commands and sanitize inputs for security.
+All executed commands shall be logged for auditing and debugging.
+The Voice Agent shall provide audio feedback on execution progress, success, or errors.
+
+3.1.5 Code Updating
+
+The Updater Agent shall modify code based on new user requirements.
+Changes shall be tracked using a lightweight version control system (e.g., Git-like diffs).
+Proposed updates shall be presented as diffs in the markdown document for user approval before merging.
+The Voice Agent shall narrate proposed changes and their impact before user approval.
+
+3.1.6 User Input Collection
+
+The User Inputs Agent shall collect specific inputs (e.g., API keys, database URLs) THROUGH the chat interface.
+All inputs shall be encrypted to ensure security.
+The Voice Agent shall confirm successful input collection or request clarification if inputs are invalid.
+
+3.1.7 Voice Feedback
+
+The Voice Agent shall provide asynchronous updates and code explanations from all agents (SRS Creation, Directory Structure, Code Generator, Executor, Updater, User Inputs, Testing, Documentation, Error Handling, Version Control).
+Updates shall use a priority queue:
+High-priority messages (e.g., errors, critical updates) are spoken immediately.
+Low-priority messages (e.g., progress updates, detailed code explanations) are batched or summarized.
+
+
+Users shall toggle verbosity (e.g., "silent mode," "summary mode," or "detailed explanations") via the chat interface.
+The Voice Agent shall narrate code snippets and explain their functionality during generation or updates.
+
+3.1.8 Testing
+
+The Testing Agent shall generate unit tests for the code.
+Tests shall be executed via the Executor Agent, with results reported to the user.
+The Voice Agent shall provide audio summaries of test results, highlighting passed or failed tests.
+
+3.1.9 Documentation
+
+The Documentation Agent shall auto-generate documentation (e.g., README, API docs) based on the SRS and code.
+The Voice Agent shall provide audio summaries of generated documentation.
+
+3.1.10 Error Handling
+
+The Error Handling Agent shall monitor execution logs for errors.
+Upon detecting an error, it shall suggest fixes (e.g., "Missing import: add import os") or alert the user via the chat interface.
+The Voice Agent shall narrate error details and proposed fixes in real-time.
+
+3.1.11 Version Control
+
+The Version Control Agent shall manage versions of the code and SRS, supporting change tracking and rollback.
+The Voice Agent shall provide audio updates on version changes or rollback events.
+
+3.2 Non-Functional Requirements
+3.2.1 Security
+
+All OS commands shall be validated and sanitized to prevent vulnerabilities.
+Sensitive user inputs (e.g., API keys) shall be encrypted during collection and storage.
+
+3.2.2 Portability
+
+The system shall use platform-agnostic libraries to ensure compatibility across Linux, Windows, and macOS.
+
+3.2.3 Usability
+
+The chat interface shall be intuitive, with a dynamically updated markdown document for easy review.
+Voice feedback shall be clear, concise, and adjustable to user preferences.
+
+3.2.4 Performance
+
+Code generation and execution shall be optimized for efficiency using parallel processing.
+Voice feedback shall not significantly impact system responsiveness, even during intensive tasks.
+
+3.2.5 Reliability
+
+The system shall handle errors gracefully, providing actionable feedback.
+Unit tests shall ensure code meets specified requirements.
+
+
+4. System Architecture
+CodeGenie comprises multiple agents (SRS Creation, Directory Structure, Divider, Code Generator, Executor, Updater, User Inputs, Voice, Testing, Documentation, Error Handling, Version Control) interacting via Google ADK protocols. Agents share data (e.g., JSON SRS, dependency graphs) and integrate with external tools (e.g., AI models for code generation, Google search, and crawling) as needed. The Voice Agent processes a queue of feedback from all agents to provide real-time audio updates.
+
+5. User Interface
+The interface features:
+
+Left Panel: A dynamic markdown document displaying the SRS and directory structure.
+Right Panel: A ChatGPT-like chat window for user interaction, feedback, and command input.
+Voice Feedback (UI 2): Real-time audio narration of agent activities, including:
+Code explanations during generation or updates.
+Progress updates on directory creation, execution, and testing.
+Error reports and suggested fixes.
+Summaries of documentation and version control actions.
+
+
+Users can toggle voice feedback verbosity (silent, summary, or detailed) via the chat interface.
+
+
+6. Implementation Details
+6.1 Technologies Used
+
+Python: Core scripting language.
+JSON: Machine-readable data format for SRS and internal processing.
+Markdown: Human-readable document format.
+Google ADK: Agent communication and tool integration.
+Speech Synthesis Library: For Voice Agent audio feedback (e.g., pyttsx3 or similar).
+
+6.2 Agent Communication
+Agents communicate via message queues or direct calls, leveraging ADK protocols for seamless data sharing (e.g., Divider Agent sends context to Code Generator Agents). The Voice Agent receives feedback from all agents via a priority queue for processing and narration., Multi-Agent Systems in ADK¶
+As agentic applications grow in complexity, structuring them as a single, monolithic agent can become challenging to develop, maintain, and reason about. The Agent Development Kit (ADK) supports building sophisticated applications by composing multiple, distinct BaseAgent instances into a Multi-Agent System (MAS).
+
+In ADK, a multi-agent system is an application where different agents, often forming a hierarchy, collaborate or coordinate to achieve a larger goal. Structuring your application this way offers significant advantages, including enhanced modularity, specialization, reusability, maintainability, and the ability to define structured control flows using dedicated workflow agents.
+
+You can compose various types of agents derived from BaseAgent to build these systems:
+
+LLM Agents: Agents powered by large language models. (See LLM Agents)
+Workflow Agents: Specialized agents (SequentialAgent, ParallelAgent, LoopAgent) designed to manage the execution flow of their sub-agents. (See Workflow Agents)
+Custom agents: Your own agents inheriting from BaseAgent with specialized, non-LLM logic. (See Custom Agents)
+The following sections detail the core ADK primitives—such as agent hierarchy, workflow agents, and interaction mechanisms—that enable you to construct and manage these multi-agent systems effectively.
+
+1. ADK Primitives for Agent Composition¶
+ADK provides core building blocks—primitives—that enable you to structure and manage interactions within your multi-agent system.
+
+Note
+
+The specific parameters or method names for the primitives may vary slightly by SDK language (e.g., sub_agents in Python, subAgents in Java). Refer to the language-specific API documentation for details.
+
+1.1. Agent Hierarchy (Parent agent, Sub Agents)¶
+The foundation for structuring multi-agent systems is the parent-child relationship defined in BaseAgent.
+
+Establishing Hierarchy: You create a tree structure by passing a list of agent instances to the sub_agents argument when initializing a parent agent. ADK automatically sets the parent_agent attribute on each child agent during initialization.
+Single Parent Rule: An agent instance can only be added as a sub-agent once. Attempting to assign a second parent will result in a ValueError.
+Importance: This hierarchy defines the scope for Workflow Agents and influences the potential targets for LLM-Driven Delegation. You can navigate the hierarchy using agent.parent_agent or find descendants using agent.find_agent(name).
+
+Python
+Java
+
+# Conceptual Example: Defining Hierarchy
+from google.adk.agents import LlmAgent, BaseAgent
+
+# Define individual agents
+greeter = LlmAgent(name="Greeter", model="gemini-2.0-flash")
+task_doer = BaseAgent(name="TaskExecutor") # Custom non-LLM agent
+
+# Create parent agent and assign children via sub_agents
+coordinator = LlmAgent(
+    name="Coordinator",
+    model="gemini-2.0-flash",
+    description="I coordinate greetings and tasks.",
+    sub_agents=[ # Assign sub_agents here
+        greeter,
+        task_doer
+    ]
+)
+
+# Framework automatically sets:
+# assert greeter.parent_agent == coordinator
+# assert task_doer.parent_agent == coordinator
+
+1.2. Workflow Agents as Orchestrators¶
+ADK includes specialized agents derived from BaseAgent that don't perform tasks themselves but orchestrate the execution flow of their sub_agents.
+
+SequentialAgent: Executes its sub_agents one after another in the order they are listed.
+Context: Passes the same InvocationContext sequentially, allowing agents to easily pass results via shared state.
+
+Python
+Java
+
+# Conceptual Example: Sequential Pipeline
+from google.adk.agents import SequentialAgent, LlmAgent
+
+step1 = LlmAgent(name="Step1_Fetch", output_key="data") # Saves output to state['data']
+step2 = LlmAgent(name="Step2_Process", instruction="Process data from state key 'data'.")
+
+pipeline = SequentialAgent(name="MyPipeline", sub_agents=[step1, step2])
+# When pipeline runs, Step2 can access the state['data'] set by Step1.
+
+ParallelAgent: Executes its sub_agents in parallel. Events from sub-agents may be interleaved.
+Context: Modifies the InvocationContext.branch for each child agent (e.g., ParentBranch.ChildName), providing a distinct contextual path which can be useful for isolating history in some memory implementations.
+State: Despite different branches, all parallel children access the same shared session.state, enabling them to read initial state and write results (use distinct keys to avoid race conditions).
+
+Python
+Java
+
+# Conceptual Example: Parallel Execution
+from google.adk.agents import ParallelAgent, LlmAgent
+
+fetch_weather = LlmAgent(name="WeatherFetcher", output_key="weather")
+fetch_news = LlmAgent(name="NewsFetcher", output_key="news")
+
+gatherer = ParallelAgent(name="InfoGatherer", sub_agents=[fetch_weather, fetch_news])
+# When gatherer runs, WeatherFetcher and NewsFetcher run concurrently.
+# A subsequent agent could read state['weather'] and state['news'].
+
+LoopAgent: Executes its sub_agents sequentially in a loop.
+Termination: The loop stops if the optional max_iterations is reached, or if any sub-agent returns an Event with escalate=True in it's Event Actions.
+Context & State: Passes the same InvocationContext in each iteration, allowing state changes (e.g., counters, flags) to persist across loops.
+
+Python
+Java
+
+# Conceptual Example: Loop with Condition
+from google.adk.agents import LoopAgent, LlmAgent, BaseAgent
+from google.adk.events import Event, EventActions
+from google.adk.agents.invocation_context import InvocationContext
+from typing import AsyncGenerator
+
+class CheckCondition(BaseAgent): # Custom agent to check state
+    async def _run_async_impl(self, ctx: InvocationContext) -> AsyncGenerator[Event, None]:
+        status = ctx.session.state.get("status", "pending")
+        is_done = (status == "completed")
+        yield Event(author=self.name, actions=EventActions(escalate=is_done)) # Escalate if done
+
+process_step = LlmAgent(name="ProcessingStep") # Agent that might update state['status']
+
+poller = LoopAgent(
+    name="StatusPoller",
+    max_iterations=10,
+    sub_agents=[process_step, CheckCondition(name="Checker")]
+)
+# When poller runs, it executes process_step then Checker repeatedly
+# until Checker escalates (state['status'] == 'completed') or 10 iterations pass.
+
+1.3. Interaction & Communication Mechanisms¶
+Agents within a system often need to exchange data or trigger actions in one another. ADK facilitates this through:
+
+a) Shared Session State (session.state)¶
+The most fundamental way for agents operating within the same invocation (and thus sharing the same Session object via the InvocationContext) to communicate passively.
+
+Mechanism: One agent (or its tool/callback) writes a value (context.state['data_key'] = processed_data), and a subsequent agent reads it (data = context.state.get('data_key')). State changes are tracked via CallbackContext.
+Convenience: The output_key property on LlmAgent automatically saves the agent's final response text (or structured output) to the specified state key.
+Nature: Asynchronous, passive communication. Ideal for pipelines orchestrated by SequentialAgent or passing data across LoopAgent iterations.
+See Also: State Management
+
+Python
+Java
+
+# Conceptual Example: Using output_key and reading state
+from google.adk.agents import LlmAgent, SequentialAgent
+
+agent_A = LlmAgent(name="AgentA", instruction="Find the capital of France.", output_key="capital_city")
+agent_B = LlmAgent(name="AgentB", instruction="Tell me about the city stored in state key 'capital_city'.")
+
+pipeline = SequentialAgent(name="CityInfo", sub_agents=[agent_A, agent_B])
+# AgentA runs, saves "Paris" to state['capital_city'].
+# AgentB runs, its instruction processor reads state['capital_city'] to get "Paris".
+
+b) LLM-Driven Delegation (Agent Transfer)¶
+Leverages an LlmAgent's understanding to dynamically route tasks to other suitable agents within the hierarchy.
+
+Mechanism: The agent's LLM generates a specific function call: transfer_to_agent(agent_name='target_agent_name').
+Handling: The AutoFlow, used by default when sub-agents are present or transfer isn't disallowed, intercepts this call. It identifies the target agent using root_agent.find_agent() and updates the InvocationContext to switch execution focus.
+Requires: The calling LlmAgent needs clear instructions on when to transfer, and potential target agents need distinct descriptions for the LLM to make informed decisions. Transfer scope (parent, sub-agent, siblings) can be configured on the LlmAgent.
+Nature: Dynamic, flexible routing based on LLM interpretation.
+
+Python
+Java
+
+# Conceptual Setup: LLM Transfer
+from google.adk.agents import LlmAgent
+
+booking_agent = LlmAgent(name="Booker", description="Handles flight and hotel bookings.")
+info_agent = LlmAgent(name="Info", description="Provides general information and answers questions.")
+
+coordinator = LlmAgent(
+    name="Coordinator",
+    model="gemini-2.0-flash",
+    instruction="You are an assistant. Delegate booking tasks to Booker and info requests to Info.",
+    description="Main coordinator.",
+    # AutoFlow is typically used implicitly here
+    sub_agents=[booking_agent, info_agent]
+)
+# If coordinator receives "Book a flight", its LLM should generate:
+# FunctionCall(name='transfer_to_agent', args={'agent_name': 'Booker'})
+# ADK framework then routes execution to booking_agent.
+
+c) Explicit Invocation (AgentTool)¶
+Allows an LlmAgent to treat another BaseAgent instance as a callable function or Tool.
+
+Mechanism: Wrap the target agent instance in AgentTool and include it in the parent LlmAgent's tools list. AgentTool generates a corresponding function declaration for the LLM.
+Handling: When the parent LLM generates a function call targeting the AgentTool, the framework executes AgentTool.run_async. This method runs the target agent, captures its final response, forwards any state/artifact changes back to the parent's context, and returns the response as the tool's result.
+Nature: Synchronous (within the parent's flow), explicit, controlled invocation like any other tool.
+(Note: AgentTool needs to be imported and used explicitly).
+
+Python
+Java
+
+# Conceptual Setup: Agent as a Tool
+from google.adk.agents import LlmAgent, BaseAgent
+from google.adk.tools import agent_tool
+from pydantic import BaseModel
+
+# Define a target agent (could be LlmAgent or custom BaseAgent)
+class ImageGeneratorAgent(BaseAgent): # Example custom agent
+    name: str = "ImageGen"
+    description: str = "Generates an image based on a prompt."
+    # ... internal logic ...
+    async def _run_async_impl(self, ctx): # Simplified run logic
+        prompt = ctx.session.state.get("image_prompt", "default prompt")
+        # ... generate image bytes ...
+        image_bytes = b"..."
+        yield Event(author=self.name, content=types.Content(parts=[types.Part.from_bytes(image_bytes, "image/png")]))
+
+image_agent = ImageGeneratorAgent()
+image_tool = agent_tool.AgentTool(agent=image_agent) # Wrap the agent
+
+# Parent agent uses the AgentTool
+artist_agent = LlmAgent(
+    name="Artist",
+    model="gemini-2.0-flash",
+    instruction="Create a prompt and use the ImageGen tool to generate the image.",
+    tools=[image_tool] # Include the AgentTool
+)
+# Artist LLM generates a prompt, then calls:
+# FunctionCall(name='ImageGen', args={'image_prompt': 'a cat wearing a hat'})
+# Framework calls image_tool.run_async(...), which runs ImageGeneratorAgent.
+# The resulting image Part is returned to the Artist agent as the tool result.
+
+These primitives provide the flexibility to design multi-agent interactions ranging from tightly coupled sequential workflows to dynamic, LLM-driven delegation networks.
+
+2. Common Multi-Agent Patterns using ADK Primitives¶
+By combining ADK's composition primitives, you can implement various established patterns for multi-agent collaboration.
+
+Coordinator/Dispatcher Pattern¶
+Structure: A central LlmAgent (Coordinator) manages several specialized sub_agents.
+Goal: Route incoming requests to the appropriate specialist agent.
+ADK Primitives Used:
+Hierarchy: Coordinator has specialists listed in sub_agents.
+Interaction: Primarily uses LLM-Driven Delegation (requires clear descriptions on sub-agents and appropriate instruction on Coordinator) or Explicit Invocation (AgentTool) (Coordinator includes AgentTool-wrapped specialists in its tools).
+
+Python
+Java
+
+# Conceptual Code: Coordinator using LLM Transfer
+from google.adk.agents import LlmAgent
+
+billing_agent = LlmAgent(name="Billing", description="Handles billing inquiries.")
+support_agent = LlmAgent(name="Support", description="Handles technical support requests.")
+
+coordinator = LlmAgent(
+    name="HelpDeskCoordinator",
+    model="gemini-2.0-flash",
+    instruction="Route user requests: Use Billing agent for payment issues, Support agent for technical problems.",
+    description="Main help desk router.",
+    # allow_transfer=True is often implicit with sub_agents in AutoFlow
+    sub_agents=[billing_agent, support_agent]
+)
+# User asks "My payment failed" -> Coordinator's LLM should call transfer_to_agent(agent_name='Billing')
+# User asks "I can't log in" -> Coordinator's LLM should call transfer_to_agent(agent_name='Support')
+
+Sequential Pipeline Pattern¶
+Structure: A SequentialAgent contains sub_agents executed in a fixed order.
+Goal: Implement a multi-step process where the output of one step feeds into the next.
+ADK Primitives Used:
+Workflow: SequentialAgent defines the order.
+Communication: Primarily uses Shared Session State. Earlier agents write results (often via output_key), later agents read those results from context.state.
+
+Python
+Java
+
+# Conceptual Code: Sequential Data Pipeline
+from google.adk.agents import SequentialAgent, LlmAgent
+
+validator = LlmAgent(name="ValidateInput", instruction="Validate the input.", output_key="validation_status")
+processor = LlmAgent(name="ProcessData", instruction="Process data if state key 'validation_status' is 'valid'.", output_key="result")
+reporter = LlmAgent(name="ReportResult", instruction="Report the result from state key 'result'.")
+
+data_pipeline = SequentialAgent(
+    name="DataPipeline",
+    sub_agents=[validator, processor, reporter]
+)
+# validator runs -> saves to state['validation_status']
+# processor runs -> reads state['validation_status'], saves to state['result']
+# reporter runs -> reads state['result']
+
+Parallel Fan-Out/Gather Pattern¶
+Structure: A ParallelAgent runs multiple sub_agents concurrently, often followed by a later agent (in a SequentialAgent) that aggregates results.
+Goal: Execute independent tasks simultaneously to reduce latency, then combine their outputs.
+ADK Primitives Used:
+Workflow: ParallelAgent for concurrent execution (Fan-Out). Often nested within a SequentialAgent to handle the subsequent aggregation step (Gather).
+Communication: Sub-agents write results to distinct keys in Shared Session State. The subsequent "Gather" agent reads multiple state keys.
+
+Python
+Java
+
+# Conceptual Code: Parallel Information Gathering
+from google.adk.agents import SequentialAgent, ParallelAgent, LlmAgent
+
+fetch_api1 = LlmAgent(name="API1Fetcher", instruction="Fetch data from API 1.", output_key="api1_data")
+fetch_api2 = LlmAgent(name="API2Fetcher", instruction="Fetch data from API 2.", output_key="api2_data")
+
+gather_concurrently = ParallelAgent(
+    name="ConcurrentFetch",
+    sub_agents=[fetch_api1, fetch_api2]
+)
+
+synthesizer = LlmAgent(
+    name="Synthesizer",
+    instruction="Combine results from state keys 'api1_data' and 'api2_data'."
+)
+
+overall_workflow = SequentialAgent(
+    name="FetchAndSynthesize",
+    sub_agents=[gather_concurrently, synthesizer] # Run parallel fetch, then synthesize
+)
+# fetch_api1 and fetch_api2 run concurrently, saving to state.
+# synthesizer runs afterwards, reading state['api1_data'] and state['api2_data'].
+
+Hierarchical Task Decomposition¶
+Structure: A multi-level tree of agents where higher-level agents break down complex goals and delegate sub-tasks to lower-level agents.
+Goal: Solve complex problems by recursively breaking them down into simpler, executable steps.
+ADK Primitives Used:
+Hierarchy: Multi-level parent_agent/sub_agents structure.
+Interaction: Primarily LLM-Driven Delegation or Explicit Invocation (AgentTool) used by parent agents to assign tasks to subagents. Results are returned up the hierarchy (via tool responses or state).
+
+Python
+Java
+
+# Conceptual Code: Hierarchical Research Task
+from google.adk.agents import LlmAgent
+from google.adk.tools import agent_tool
+
+# Low-level tool-like agents
+web_searcher = LlmAgent(name="WebSearch", description="Performs web searches for facts.")
+summarizer = LlmAgent(name="Summarizer", description="Summarizes text.")
+
+# Mid-level agent combining tools
+research_assistant = LlmAgent(
+    name="ResearchAssistant",
+    model="gemini-2.0-flash",
+    description="Finds and summarizes information on a topic.",
+    tools=[agent_tool.AgentTool(agent=web_searcher), agent_tool.AgentTool(agent=summarizer)]
+)
+
+# High-level agent delegating research
+report_writer = LlmAgent(
+    name="ReportWriter",
+    model="gemini-2.0-flash",
+    instruction="Write a report on topic X. Use the ResearchAssistant to gather information.",
+    tools=[agent_tool.AgentTool(agent=research_assistant)]
+    # Alternatively, could use LLM Transfer if research_assistant is a sub_agent
+)
+# User interacts with ReportWriter.
+# ReportWriter calls ResearchAssistant tool.
+# ResearchAssistant calls WebSearch and Summarizer tools.
+# Results flow back up.
+
+Review/Critique Pattern (Generator-Critic)¶
+Structure: Typically involves two agents within a SequentialAgent: a Generator and a Critic/Reviewer.
+Goal: Improve the quality or validity of generated output by having a dedicated agent review it.
+ADK Primitives Used:
+Workflow: SequentialAgent ensures generation happens before review.
+Communication: Shared Session State (Generator uses output_key to save output; Reviewer reads that state key). The Reviewer might save its feedback to another state key for subsequent steps.
+
+Python
+Java
+
+# Conceptual Code: Generator-Critic
+from google.adk.agents import SequentialAgent, LlmAgent
+
+generator = LlmAgent(
+    name="DraftWriter",
+    instruction="Write a short paragraph about subject X.",
+    output_key="draft_text"
+)
+
+reviewer = LlmAgent(
+    name="FactChecker",
+    instruction="Review the text in state key 'draft_text' for factual accuracy. Output 'valid' or 'invalid' with reasons.",
+    output_key="review_status"
+)
+
+# Optional: Further steps based on review_status
+
+review_pipeline = SequentialAgent(
+    name="WriteAndReview",
+    sub_agents=[generator, reviewer]
+)
+# generator runs -> saves draft to state['draft_text']
+# reviewer runs -> reads state['draft_text'], saves status to state['review_status']
+
+Iterative Refinement Pattern¶
+Structure: Uses a LoopAgent containing one or more agents that work on a task over multiple iterations.
+Goal: Progressively improve a result (e.g., code, text, plan) stored in the session state until a quality threshold is met or a maximum number of iterations is reached.
+ADK Primitives Used:
+Workflow: LoopAgent manages the repetition.
+Communication: Shared Session State is essential for agents to read the previous iteration's output and save the refined version.
+Termination: The loop typically ends based on max_iterations or a dedicated checking agent setting escalate=True in the Event Actions when the result is satisfactory.
+
+Python
+Java
+
+# Conceptual Code: Iterative Code Refinement
+from google.adk.agents import LoopAgent, LlmAgent, BaseAgent
+from google.adk.events import Event, EventActions
+from google.adk.agents.invocation_context import InvocationContext
+from typing import AsyncGenerator
+
+# Agent to generate/refine code based on state['current_code'] and state['requirements']
+code_refiner = LlmAgent(
+    name="CodeRefiner",
+    instruction="Read state['current_code'] (if exists) and state['requirements']. Generate/refine Python code to meet requirements. Save to state['current_code'].",
+    output_key="current_code" # Overwrites previous code in state
+)
+
+# Agent to check if the code meets quality standards
+quality_checker = LlmAgent(
+    name="QualityChecker",
+    instruction="Evaluate the code in state['current_code'] against state['requirements']. Output 'pass' or 'fail'.",
+    output_key="quality_status"
+)
+
+# Custom agent to check the status and escalate if 'pass'
+class CheckStatusAndEscalate(BaseAgent):
+    async def _run_async_impl(self, ctx: InvocationContext) -> AsyncGenerator[Event, None]:
+        status = ctx.session.state.get("quality_status", "fail")
+        should_stop = (status == "pass")
+        yield Event(author=self.name, actions=EventActions(escalate=should_stop))
+
+refinement_loop = LoopAgent(
+    name="CodeRefinementLoop",
+    max_iterations=5,
+    sub_agents=[code_refiner, quality_checker, CheckStatusAndEscalate(name="StopChecker")]
+)
+# Loop runs: Refiner -> Checker -> StopChecker
+# State['current_code'] is updated each iteration.
+# Loop stops if QualityChecker outputs 'pass' (leading to StopChecker escalating) or after 5 iterations.
+
+Human-in-the-Loop Pattern¶
+Structure: Integrates human intervention points within an agent workflow.
+Goal: Allow for human oversight, approval, correction, or tasks that AI cannot perform.
+ADK Primitives Used (Conceptual):
+Interaction: Can be implemented using a custom Tool that pauses execution and sends a request to an external system (e.g., a UI, ticketing system) waiting for human input. The tool then returns the human's response to the agent.
+Workflow: Could use LLM-Driven Delegation (transfer_to_agent) targeting a conceptual "Human Agent" that triggers the external workflow, or use the custom tool within an LlmAgent.
+State/Callbacks: State can hold task details for the human; callbacks can manage the interaction flow.
+Note: ADK doesn't have a built-in "Human Agent" type, so this requires custom integration.
+
+Python
+Java
+
+# Conceptual Code: Using a Tool for Human Approval
+from google.adk.agents import LlmAgent, SequentialAgent
+from google.adk.tools import FunctionTool
+
+# --- Assume external_approval_tool exists ---
+# This tool would:
+# 1. Take details (e.g., request_id, amount, reason).
+# 2. Send these details to a human review system (e.g., via API).
+# 3. Poll or wait for the human response (approved/rejected).
+# 4. Return the human's decision.
+# async def external_approval_tool(amount: float, reason: str) -> str: ...
+approval_tool = FunctionTool(func=external_approval_tool)
+
+# Agent that prepares the request
+prepare_request = LlmAgent(
+    name="PrepareApproval",
+    instruction="Prepare the approval request details based on user input. Store amount and reason in state.",
+    # ... likely sets state['approval_amount'] and state['approval_reason'] ...
+)
+
+# Agent that calls the human approval tool
+request_approval = LlmAgent(
+    name="RequestHumanApproval",
+    instruction="Use the external_approval_tool with amount from state['approval_amount'] and reason from state['approval_reason'].",
+    tools=[approval_tool],
+    output_key="human_decision"
+)
+
+# Agent that proceeds based on human decision
+process_decision = LlmAgent(
+    name="ProcessDecision",
+    instruction="Check state key 'human_decision'. If 'approved', proceed. If 'rejected', inform user."
+)
+
+approval_workflow = SequentialAgent(
+    name="HumanApprovalWorkflow",
+    sub_agents=[prepare_request, request_approval, process_decision]
+)
+
+These patterns provide starting points for structuring your multi-agent systems. You can mix and match them as needed to create the most effective architecture for your specific application.,Context¶
+What are Context¶
+In the Agent Development Kit (ADK), "context" refers to the crucial bundle of information available to your agent and its tools during specific operations. Think of it as the necessary background knowledge and resources needed to handle a current task or conversation turn effectively.
+
+Agents often need more than just the latest user message to perform well. Context is essential because it enables:
+
+Maintaining State: Remembering details across multiple steps in a conversation (e.g., user preferences, previous calculations, items in a shopping cart). This is primarily managed through session state.
+Passing Data: Sharing information discovered or generated in one step (like an LLM call or a tool execution) with subsequent steps. Session state is key here too.
+Accessing Services: Interacting with framework capabilities like:
+Artifact Storage: Saving or loading files or data blobs (like PDFs, images, configuration files) associated with the session.
+Memory: Searching for relevant information from past interactions or external knowledge sources connected to the user.
+Authentication: Requesting and retrieving credentials needed by tools to access external APIs securely.
+Identity and Tracking: Knowing which agent is currently running (agent.name) and uniquely identifying the current request-response cycle (invocation_id) for logging and debugging.
+Tool-Specific Actions: Enabling specialized operations within tools, such as requesting authentication or searching memory, which require access to the current interaction's details.
+The central piece holding all this information together for a single, complete user-request-to-final-response cycle (an invocation) is the InvocationContext. However, you typically won't create or manage this object directly. The ADK framework creates it when an invocation starts (e.g., via runner.run_async) and passes the relevant contextual information implicitly to your agent code, callbacks, and tools.
+
+
+Python
+Java
+
+# Conceptual Pseudocode: How the framework provides context (Internal Logic)
+
+# runner = Runner(agent=my_root_agent, session_service=..., artifact_service=...)
+# user_message = types.Content(...)
+# session = session_service.get_session(...) # Or create new
+
+# --- Inside runner.run_async(...) ---
+# 1. Framework creates the main context for this specific run
+# invocation_context = InvocationContext(
+#     invocation_id="unique-id-for-this-run",
+#     session=session,
+#     user_content=user_message,
+#     agent=my_root_agent, # The starting agent
+#     session_service=session_service,
+#     artifact_service=artifact_service,
+#     memory_service=memory_service,
+#     # ... other necessary fields ...
+# )
+#
+# 2. Framework calls the agent's run method, passing the context implicitly
+#    (The agent's method signature will receive it, e.g., runAsyncImpl(InvocationContext invocationContext))
+# await my_root_agent.run_async(invocation_context)
+#   --- End Internal Logic ---
+#
+# As a developer, you work with the context objects provided in method arguments.
+
+The Different types of Context¶
+While InvocationContext acts as the comprehensive internal container, ADK provides specialized context objects tailored to specific situations. This ensures you have the right tools and permissions for the task at hand without needing to handle the full complexity of the internal context everywhere. Here are the different "flavors" you'll encounter:
+
+InvocationContext
+
+Where Used: Received as the ctx argument directly within an agent's core implementation methods (_run_async_impl, _run_live_impl).
+Purpose: Provides access to the entire state of the current invocation. This is the most comprehensive context object.
+Key Contents: Direct access to session (including state and events), the current agent instance, invocation_id, initial user_content, references to configured services (artifact_service, memory_service, session_service), and fields related to live/streaming modes.
+Use Case: Primarily used when the agent's core logic needs direct access to the overall session or services, though often state and artifact interactions are delegated to callbacks/tools which use their own contexts. Also used to control the invocation itself (e.g., setting ctx.end_invocation = True).
+
+Python
+Java
+
+# Pseudocode: Agent implementation receiving InvocationContext
+from google.adk.agents import BaseAgent
+from google.adk.agents.invocation_context import InvocationContext
+from google.adk.events import Event
+from typing import AsyncGenerator
+
+class MyAgent(BaseAgent):
+    async def _run_async_impl(self, ctx: InvocationContext) -> AsyncGenerator[Event, None]:
+        # Direct access example
+        agent_name = ctx.agent.name
+        session_id = ctx.session.id
+        print(f"Agent {agent_name} running in session {session_id} for invocation {ctx.invocation_id}")
+        # ... agent logic using ctx ...
+        yield # ... event ...
+
+ReadonlyContext
+
+Where Used: Provided in scenarios where only read access to basic information is needed and mutation is disallowed (e.g., InstructionProvider functions). It's also the base class for other contexts.
+Purpose: Offers a safe, read-only view of fundamental contextual details.
+Key Contents: invocation_id, agent_name, and a read-only view of the current state.
+
+Python
+Java
+
+# Pseudocode: Instruction provider receiving ReadonlyContext
+from google.adk.agents import ReadonlyContext
+
+def my_instruction_provider(context: ReadonlyContext) -> str:
+    # Read-only access example
+    user_tier = context.state().get("user_tier", "standard") # Can read state
+    # context.state['new_key'] = 'value' # This would typically cause an error or be ineffective
+    return f"Process the request for a {user_tier} user."
+
+CallbackContext
+
+Where Used: Passed as callback_context to agent lifecycle callbacks (before_agent_callback, after_agent_callback) and model interaction callbacks (before_model_callback, after_model_callback).
+Purpose: Facilitates inspecting and modifying state, interacting with artifacts, and accessing invocation details specifically within callbacks.
+Key Capabilities (Adds to ReadonlyContext):
+Mutable state Property: Allows reading and writing to session state. Changes made here (callback_context.state['key'] = value) are tracked and associated with the event generated by the framework after the callback.
+Artifact Methods: load_artifact(filename) and save_artifact(filename, part) methods for interacting with the configured artifact_service.
+Direct user_content access.
+
+Python
+Java
+
+# Pseudocode: Callback receiving CallbackContext
+from google.adk.agents.callback_context import CallbackContext
+from google.adk.models import LlmRequest
+from google.genai import types
+from typing import Optional
+
+def my_before_model_cb(callback_context: CallbackContext, request: LlmRequest) -> Optional[types.Content]:
+    # Read/Write state example
+    call_count = callback_context.state.get("model_calls", 0)
+    callback_context.state["model_calls"] = call_count + 1 # Modify state
+
+    # Optionally load an artifact
+    # config_part = callback_context.load_artifact("model_config.json")
+    print(f"Preparing model call #{call_count + 1} for invocation {callback_context.invocation_id}")
+    return None # Allow model call to proceed
+
+ToolContext
+
+Where Used: Passed as tool_context to the functions backing FunctionTools and to tool execution callbacks (before_tool_callback, after_tool_callback).
+Purpose: Provides everything CallbackContext does, plus specialized methods essential for tool execution, like handling authentication, searching memory, and listing artifacts.
+Key Capabilities (Adds to CallbackContext):
+Authentication Methods: request_credential(auth_config) to trigger an auth flow, and get_auth_response(auth_config) to retrieve credentials provided by the user/system.
+Artifact Listing: list_artifacts() to discover available artifacts in the session.
+Memory Search: search_memory(query) to query the configured memory_service.
+function_call_id Property: Identifies the specific function call from the LLM that triggered this tool execution, crucial for linking authentication requests or responses back correctly.
+actions Property: Direct access to the EventActions object for this step, allowing the tool to signal state changes, auth requests, etc.
+
+Python
+Java
+
+# Pseudocode: Tool function receiving ToolContext
+from google.adk.tools import ToolContext
+from typing import Dict, Any
+
+# Assume this function is wrapped by a FunctionTool
+def search_external_api(query: str, tool_context: ToolContext) -> Dict[str, Any]:
+    api_key = tool_context.state.get("api_key")
+    if not api_key:
+        # Define required auth config
+        # auth_config = AuthConfig(...)
+        # tool_context.request_credential(auth_config) # Request credentials
+        # Use the 'actions' property to signal the auth request has been made
+        # tool_context.actions.requested_auth_configs[tool_context.function_call_id] = auth_config
+        return {"status": "Auth Required"}
+
+    # Use the API key...
+    print(f"Tool executing for query '{query}' using API key. Invocation: {tool_context.invocation_id}")
+
+    # Optionally search memory or list artifacts
+    # relevant_docs = tool_context.search_memory(f"info related to {query}")
+    # available_files = tool_context.list_artifacts()
+
+    return {"result": f"Data for {query} fetched."}
+
+Understanding these different context objects and when to use them is key to effectively managing state, accessing services, and controlling the flow of your ADK application. The next section will detail common tasks you can perform using these contexts.
+
+Common Tasks Using Context¶
+Now that you understand the different context objects, let's focus on how to use them for common tasks when building your agents and tools.
+
+Accessing Information¶
+You'll frequently need to read information stored within the context.
+
+Reading Session State: Access data saved in previous steps or user/app-level settings. Use dictionary-like access on the state property.
+
+
+Python
+Java
+
+# Pseudocode: In a Tool function
+from google.adk.tools import ToolContext
+
+def my_tool(tool_context: ToolContext, **kwargs):
+    user_pref = tool_context.state.get("user_display_preference", "default_mode")
+    api_endpoint = tool_context.state.get("app:api_endpoint") # Read app-level state
+
+    if user_pref == "dark_mode":
+        # ... apply dark mode logic ...
+        pass
+    print(f"Using API endpoint: {api_endpoint}")
+    # ... rest of tool logic ...
+
+# Pseudocode: In a Callback function
+from google.adk.agents.callback_context import CallbackContext
+
+def my_callback(callback_context: CallbackContext, **kwargs):
+    last_tool_result = callback_context.state.get("temp:last_api_result") # Read temporary state
+    if last_tool_result:
+        print(f"Found temporary result from last tool: {last_tool_result}")
+    # ... callback logic ...
+
+Getting Current Identifiers: Useful for logging or custom logic based on the current operation.
+
+
+Python
+Java
+
+# Pseudocode: In any context (ToolContext shown)
+from google.adk.tools import ToolContext
+
+def log_tool_usage(tool_context: ToolContext, **kwargs):
+    agent_name = tool_context.agent_nameSystem.out.println("Found temporary result from last tool: " + lastToolResult);
+    inv_id = tool_context.invocation_id
+    func_call_id = getattr(tool_context, 'function_call_id', 'N/A') # Specific to ToolContext
+
+    print(f"Log: Invocation={inv_id}, Agent={agent_name}, FunctionCallID={func_call_id} - Tool Executed.")
+
+Accessing the Initial User Input: Refer back to the message that started the current invocation.
+
+
+Python
+Java
+
+# Pseudocode: In a Callback
+from google.adk.agents.callback_context import CallbackContext
+
+def check_initial_intent(callback_context: CallbackContext, **kwargs):
+    initial_text = "N/A"
+    if callback_context.user_content and callback_context.user_content.parts:
+        initial_text = callback_context.user_content.parts[0].text or "Non-text input"
+
+    print(f"This invocation started with user input: '{initial_text}'")
+
+# Pseudocode: In an Agent's _run_async_impl
+# async def _run_async_impl(self, ctx: InvocationContext) -> AsyncGenerator[Event, None]:
+#     if ctx.user_content and ctx.user_content.parts:
+#         initial_text = ctx.user_content.parts[0].text
+#         print(f"Agent logic remembering initial query: {initial_text}")
+#     ...
+
+Managing Session State¶
+State is crucial for memory and data flow. When you modify state using CallbackContext or ToolContext, the changes are automatically tracked and persisted by the framework.
+
+How it Works: Writing to callback_context.state['my_key'] = my_value or tool_context.state['my_key'] = my_value adds this change to the EventActions.state_delta associated with the current step's event. The SessionService then applies these deltas when persisting the event.
+Passing Data Between Tools:
+
+
+Python
+Java
+
+# Pseudocode: Tool 1 - Fetches user ID
+from google.adk.tools import ToolContext
+import uuid
+
+def get_user_profile(tool_context: ToolContext) -> dict:
+    user_id = str(uuid.uuid4()) # Simulate fetching ID
+    # Save the ID to state for the next tool
+    tool_context.state["temp:current_user_id"] = user_id
+    return {"profile_status": "ID generated"}
+
+# Pseudocode: Tool 2 - Uses user ID from state
+def get_user_orders(tool_context: ToolContext) -> dict:
+    user_id = tool_context.state.get("temp:current_user_id")
+    if not user_id:
+        return {"error": "User ID not found in state"}
+
+    print(f"Fetching orders for user ID: {user_id}")
+    # ... logic to fetch orders using user_id ...
+    return {"orders": ["order123", "order456"]}
+
+Updating User Preferences:
+
+
+Python
+Java
+
+# Pseudocode: Tool or Callback identifies a preference
+from google.adk.tools import ToolContext # Or CallbackContext
+
+def set_user_preference(tool_context: ToolContext, preference: str, value: str) -> dict:
+    # Use 'user:' prefix for user-level state (if using a persistent SessionService)
+    state_key = f"user:{preference}"
+    tool_context.state[state_key] = value
+    print(f"Set user preference '{preference}' to '{value}'")
+    return {"status": "Preference updated"}
+
+State Prefixes: While basic state is session-specific, prefixes like app: and user: can be used with persistent SessionService implementations (like DatabaseSessionService or VertexAiSessionService) to indicate broader scope (app-wide or user-wide across sessions). temp: can denote data only relevant within the current invocation.
+
+Working with Artifacts¶
+Use artifacts to handle files or large data blobs associated with the session. Common use case: processing uploaded documents.
+
+Document Summarizer Example Flow:
+
+Ingest Reference (e.g., in a Setup Tool or Callback): Save the path or URI of the document, not the entire content, as an artifact.
+
+
+Python
+Java
+
+# Pseudocode: In a callback or initial tool
+from google.adk.agents import CallbackContext # Or ToolContext
+from google.genai import types
+
+def save_document_reference(context: CallbackContext, file_path: str) -> None:
+    # Assume file_path is something like "gs://my-bucket/docs/report.pdf" or "/local/path/to/report.pdf"
+    try:
+        # Create a Part containing the path/URI text
+        artifact_part = types.Part(text=file_path)
+        version = context.save_artifact("document_to_summarize.txt", artifact_part)
+        print(f"Saved document reference '{file_path}' as artifact version {version}")
+        # Store the filename in state if needed by other tools
+        context.state["temp:doc_artifact_name"] = "document_to_summarize.txt"
+    except ValueError as e:
+        print(f"Error saving artifact: {e}") # E.g., Artifact service not configured
+    except Exception as e:
+        print(f"Unexpected error saving artifact reference: {e}")
+
+# Example usage:
+# save_document_reference(callback_context, "gs://my-bucket/docs/report.pdf")
+
+Summarizer Tool: Load the artifact to get the path/URI, read the actual document content using appropriate libraries, summarize, and return the result.
+
+
+Python
+Java
+
+# Pseudocode: In the Summarizer tool function
+from google.adk.tools import ToolContext
+from google.genai import types
+# Assume libraries like google.cloud.storage or built-in open are available
+# Assume a 'summarize_text' function exists
+# from my_summarizer_lib import summarize_text
+
+def summarize_document_tool(tool_context: ToolContext) -> dict:
+    artifact_name = tool_context.state.get("temp:doc_artifact_name")
+    if not artifact_name:
+        return {"error": "Document artifact name not found in state."}
+
+    try:
+        # 1. Load the artifact part containing the path/URI
+        artifact_part = tool_context.load_artifact(artifact_name)
+        if not artifact_part or not artifact_part.text:
+            return {"error": f"Could not load artifact or artifact has no text path: {artifact_name}"}
+
+        file_path = artifact_part.text
+        print(f"Loaded document reference: {file_path}")
+
+        # 2. Read the actual document content (outside ADK context)
+        document_content = ""
+        if file_path.startswith("gs://"):
+            # Example: Use GCS client library to download/read
+            # from google.cloud import storage
+            # client = storage.Client()
+            # blob = storage.Blob.from_string(file_path, client=client)
+            # document_content = blob.download_as_text() # Or bytes depending on format
+            pass # Replace with actual GCS reading logic
+        elif file_path.startswith("/"):
+             # Example: Use local file system
+             with open(file_path, 'r', encoding='utf-8') as f:
+                 document_content = f.read()
+        else:
+            return {"error": f"Unsupported file path scheme: {file_path}"}
+
+        # 3. Summarize the content
+        if not document_content:
+             return {"error": "Failed to read document content."}
+
+        # summary = summarize_text(document_content) # Call your summarization logic
+        summary = f"Summary of content from {file_path}" # Placeholder
+
+        return {"summary": summary}
+
+    except ValueError as e:
+         return {"error": f"Artifact service error: {e}"}
+    except FileNotFoundError:
+         return {"error": f"Local file not found: {file_path}"}
+    # except Exception as e: # Catch specific exceptions for GCS etc.
+    #      return {"error": f"Error reading document {file_path}: {e}"}
+
+Listing Artifacts: Discover what files are available.
+
+
+Python
+Java
+
+# Pseudocode: In a tool function
+from google.adk.tools import ToolContext
+
+def check_available_docs(tool_context: ToolContext) -> dict:
+    try:
+        artifact_keys = tool_context.list_artifacts()
+        print(f"Available artifacts: {artifact_keys}")
+        return {"available_docs": artifact_keys}
+    except ValueError as e:
+        return {"error": f"Artifact service error: {e}"}
+
+Handling Tool Authentication¶
+python_only
+
+Securely manage API keys or other credentials needed by tools.
+
+
+# Pseudocode: Tool requiring auth
+from google.adk.tools import ToolContext
+from google.adk.auth import AuthConfig # Assume appropriate AuthConfig is defined
+
+# Define your required auth configuration (e.g., OAuth, API Key)
+MY_API_AUTH_CONFIG = AuthConfig(...)
+AUTH_STATE_KEY = "user:my_api_credential" # Key to store retrieved credential
+
+def call_secure_api(tool_context: ToolContext, request_data: str) -> dict:
+    # 1. Check if credential already exists in state
+    credential = tool_context.state.get(AUTH_STATE_KEY)
+
+    if not credential:
+        # 2. If not, request it
+        print("Credential not found, requesting...")
+        try:
+            tool_context.request_credential(MY_API_AUTH_CONFIG)
+            # The framework handles yielding the event. The tool execution stops here for this turn.
+            return {"status": "Authentication required. Please provide credentials."}
+        except ValueError as e:
+            return {"error": f"Auth error: {e}"} # e.g., function_call_id missing
+        except Exception as e:
+            return {"error": f"Failed to request credential: {e}"}
+
+    # 3. If credential exists (might be from a previous turn after request)
+    #    or if this is a subsequent call after auth flow completed externally
+    try:
+        # Optionally, re-validate/retrieve if needed, or use directly
+        # This might retrieve the credential if the external flow just completed
+        auth_credential_obj = tool_context.get_auth_response(MY_API_AUTH_CONFIG)
+        api_key = auth_credential_obj.api_key # Or access_token, etc.
+
+        # Store it back in state for future calls within the session
+        tool_context.state[AUTH_STATE_KEY] = auth_credential_obj.model_dump() # Persist retrieved credential
+
+        print(f"Using retrieved credential to call API with data: {request_data}")
+        # ... Make the actual API call using api_key ...
+        api_result = f"API result for {request_data}"
+
+        return {"result": api_result}
+    except Exception as e:
+        # Handle errors retrieving/using the credential
+        print(f"Error using credential: {e}")
+        # Maybe clear the state key if credential is invalid?
+        # tool_context.state[AUTH_STATE_KEY] = None
+        return {"error": "Failed to use credential"}
+Remember: request_credential pauses the tool and signals the need for authentication. The user/system provides credentials, and on a subsequent call, get_auth_response (or checking state again) allows the tool to proceed. The tool_context.function_call_id is used implicitly by the framework to link the request and response.
+Leveraging Memory¶
+python_only
+
+Access relevant information from the past or external sources.
+
+
+# Pseudocode: Tool using memory search
+from google.adk.tools import ToolContext
+
+def find_related_info(tool_context: ToolContext, topic: str) -> dict:
+    try:
+        search_results = tool_context.search_memory(f"Information about {topic}")
+        if search_results.results:
+            print(f"Found {len(search_results.results)} memory results for '{topic}'")
+            # Process search_results.results (which are SearchMemoryResponseEntry)
+            top_result_text = search_results.results[0].text
+            return {"memory_snippet": top_result_text}
+        else:
+            return {"message": "No relevant memories found."}
+    except ValueError as e:
+        return {"error": f"Memory service error: {e}"} # e.g., Service not configured
+    except Exception as e:
+        return {"error": f"Unexpected error searching memory: {e}"}
+Advanced: Direct InvocationContext Usage¶
+python_only
+
+While most interactions happen via CallbackContext or ToolContext, sometimes the agent's core logic (_run_async_impl/_run_live_impl) needs direct access.
+
+
+# Pseudocode: Inside agent's _run_async_impl
+from google.adk.agents import BaseAgent
+from google.adk.agents.invocation_context import InvocationContext
+from google.adk.events import Event
+from typing import AsyncGenerator
+
+class MyControllingAgent(BaseAgent):
+    async def _run_async_impl(self, ctx: InvocationContext) -> AsyncGenerator[Event, None]:
+        # Example: Check if a specific service is available
+        if not ctx.memory_service:
+            print("Memory service is not available for this invocation.")
+            # Potentially change agent behavior
+
+        # Example: Early termination based on some condition
+        if ctx.session.state.get("critical_error_flag"):
+            print("Critical error detected, ending invocation.")
+            ctx.end_invocation = True # Signal framework to stop processing
+            yield Event(author=self.name, invocation_id=ctx.invocation_id, content="Stopping due to critical error.")
+            return # Stop this agent's execution
+
+        # ... Normal agent processing ...
+        yield # ... event ...
+Setting ctx.end_invocation = True is a way to gracefully stop the entire request-response cycle from within the agent or its callbacks/tools (via their respective context objects which also have access to modify the underlying InvocationContext's flag).
+
+Key Takeaways & Best Practices¶
+Use the Right Context: Always use the most specific context object provided (ToolContext in tools/tool-callbacks, CallbackContext in agent/model-callbacks, ReadonlyContext where applicable). Use the full InvocationContext (ctx) directly in _run_async_impl / _run_live_impl only when necessary.
+State for Data Flow: context.state is the primary way to share data, remember preferences, and manage conversational memory within an invocation. Use prefixes (app:, user:, temp:) thoughtfully when using persistent storage.
+Artifacts for Files: Use context.save_artifact and context.load_artifact for managing file references (like paths or URIs) or larger data blobs. Store references, load content on demand.
+Tracked Changes: Modifications to state or artifacts made via context methods are automatically linked to the current step's EventActions and handled by the SessionService.
+Start Simple: Focus on state and basic artifact usage first. Explore authentication, memory, and advanced InvocationContext fields (like those for live streaming) as your needs become more complex.
+By understanding and effectively using these context objects, you can build more sophisticated, stateful, and capable agents with ADK., In ADK, Artifacts represent a crucial mechanism for managing named, versioned binary data associated either with a specific user interaction session or persistently with a user across multiple sessions. They allow your agents and tools to handle data beyond simple text strings, enabling richer interactions involving files, images, audio, and other binary formats.
+
+Note
+
+The specific parameters or method names for the primitives may vary slightly by SDK language (e.g., save_artifact in Python, saveArtifact in Java). Refer to the language-specific API documentation for details.
+
+What are Artifacts?¶
+Definition: An Artifact is essentially a piece of binary data (like the content of a file) identified by a unique filename string within a specific scope (session or user). Each time you save an artifact with the same filename, a new version is created.
+
+Representation: Artifacts are consistently represented using the standard google.genai.types.Part object. The core data is typically stored within an inline data structure of the Part (accessed via inline_data), which itself contains:
+
+data: The raw binary content as bytes.
+mime_type: A string indicating the type of the data (e.g., "image/png", "application/pdf"). This is essential for correctly interpreting the data later.
+
+Python
+Java
+
+# Example of how an artifact might be represented as a types.Part
+import google.genai.types as types
+
+# Assume 'image_bytes' contains the binary data of a PNG image
+image_bytes = b'\x89PNG\r\n\x1a\n...' # Placeholder for actual image bytes
+
+image_artifact = types.Part(
+    inline_data=types.Blob(
+        mime_type="image/png",
+        data=image_bytes
+    )
+)
+
+# You can also use the convenience constructor:
+# image_artifact_alt = types.Part.from_bytes(data=image_bytes, mime_type="image/png")
+
+print(f"Artifact MIME Type: {image_artifact.inline_data.mime_type}")
+print(f"Artifact Data (first 10 bytes): {image_artifact.inline_data.data[:10]}...")
+
+Persistence & Management: Artifacts are not stored directly within the agent or session state. Their storage and retrieval are managed by a dedicated Artifact Service (an implementation of BaseArtifactService, defined in google.adk.artifacts. ADK provides various implementations, such as:
+An in-memory service for testing or temporary storage (e.g., InMemoryArtifactService in Python, defined in google.adk.artifacts.in_memory_artifact_service.py).
+A service for persistent storage using Google Cloud Storage (GCS) (e.g., GcsArtifactService in Python, defined in google.adk.artifacts.gcs_artifact_service.py). The chosen service implementation handles versioning automatically when you save data.
+Why Use Artifacts?¶
+While session state is suitable for storing small pieces of configuration or conversational context (like strings, numbers, booleans, or small dictionaries/lists), Artifacts are designed for scenarios involving binary or large data:
+
+Handling Non-Textual Data: Easily store and retrieve images, audio clips, video snippets, PDFs, spreadsheets, or any other file format relevant to your agent's function.
+Persisting Large Data: Session state is generally not optimized for storing large amounts of data. Artifacts provide a dedicated mechanism for persisting larger blobs without cluttering the session state.
+User File Management: Provide capabilities for users to upload files (which can be saved as artifacts) and retrieve or download files generated by the agent (loaded from artifacts).
+Sharing Outputs: Enable tools or agents to generate binary outputs (like a PDF report or a generated image) that can be saved via save_artifact and later accessed by other parts of the application or even in subsequent sessions (if using user namespacing).
+Caching Binary Data: Store the results of computationally expensive operations that produce binary data (e.g., rendering a complex chart image) as artifacts to avoid regenerating them on subsequent requests.
+In essence, whenever your agent needs to work with file-like binary data that needs to be persisted, versioned, or shared, Artifacts managed by an ArtifactService are the appropriate mechanism within ADK.
+
+Common Use Cases¶
+Artifacts provide a flexible way to handle binary data within your ADK applications.
+
+Here are some typical scenarios where they prove valuable:
+
+Generated Reports/Files:
+
+A tool or agent generates a report (e.g., a PDF analysis, a CSV data export, an image chart).
+Handling User Uploads:
+
+A user uploads a file (e.g., an image for analysis, a document for summarization) through a front-end interface.
+Storing Intermediate Binary Results:
+
+An agent performs a complex multi-step process where one step generates intermediate binary data (e.g., audio synthesis, simulation results).
+Persistent User Data:
+
+Storing user-specific configuration or data that isn't a simple key-value state.
+Caching Generated Binary Content:
+
+An agent frequently generates the same binary output based on certain inputs (e.g., a company logo image, a standard audio greeting).
+Core Concepts¶
+Understanding artifacts involves grasping a few key components: the service that manages them, the data structure used to hold them, and how they are identified and versioned.
+
+Artifact Service (BaseArtifactService)¶
+Role: The central component responsible for the actual storage and retrieval logic for artifacts. It defines how and where artifacts are persisted.
+
+Interface: Defined by the abstract base class BaseArtifactService. Any concrete implementation must provide methods for:
+
+Save Artifact: Stores the artifact data and returns its assigned version number.
+Load Artifact: Retrieves a specific version (or the latest) of an artifact.
+List Artifact keys: Lists the unique filenames of artifacts within a given scope.
+Delete Artifact: Removes an artifact (and potentially all its versions, depending on implementation).
+List versions: Lists all available version numbers for a specific artifact filename.
+Configuration: You provide an instance of an artifact service (e.g., InMemoryArtifactService, GcsArtifactService) when initializing the Runner. The Runner then makes this service available to agents and tools via the InvocationContext.
+
+
+Python
+Java
+
+from google.adk.runners import Runner
+from google.adk.artifacts import InMemoryArtifactService # Or GcsArtifactService
+from google.adk.agents import LlmAgent # Any agent
+from google.adk.sessions import InMemorySessionService
+
+# Example: Configuring the Runner with an Artifact Service
+my_agent = LlmAgent(name="artifact_user_agent", model="gemini-2.0-flash")
+artifact_service = InMemoryArtifactService() # Choose an implementation
+session_service = InMemorySessionService()
+
+runner = Runner(
+    agent=my_agent,
+    app_name="my_artifact_app",
+    session_service=session_service,
+    artifact_service=artifact_service # Provide the service instance here
+)
+# Now, contexts within runs managed by this runner can use artifact methods
+
+Artifact Data¶
+Standard Representation: Artifact content is universally represented using the google.genai.types.Part object, the same structure used for parts of LLM messages.
+
+Key Attribute (inline_data): For artifacts, the most relevant attribute is inline_data, which is a google.genai.types.Blob object containing:
+
+data (bytes): The raw binary content of the artifact.
+mime_type (str): A standard MIME type string (e.g., 'application/pdf', 'image/png', 'audio/mpeg') describing the nature of the binary data. This is crucial for correct interpretation when loading the artifact.
+
+Python
+Java
+
+import google.genai.types as types
+
+# Example: Creating an artifact Part from raw bytes
+pdf_bytes = b'%PDF-1.4...' # Your raw PDF data
+pdf_mime_type = "application/pdf"
+
+# Using the constructor
+pdf_artifact_py = types.Part(
+    inline_data=types.Blob(data=pdf_bytes, mime_type=pdf_mime_type)
+)
+
+# Using the convenience class method (equivalent)
+pdf_artifact_alt_py = types.Part.from_bytes(data=pdf_bytes, mime_type=pdf_mime_type)
+
+print(f"Created Python artifact with MIME type: {pdf_artifact_py.inline_data.mime_type}")
+
+Filename¶
+Identifier: A simple string used to name and retrieve an artifact within its specific namespace.
+Uniqueness: Filenames must be unique within their scope (either the session or the user namespace).
+Best Practice: Use descriptive names, potentially including file extensions (e.g., "monthly_report.pdf", "user_avatar.jpg"), although the extension itself doesn't dictate behavior – the mime_type does.
+Versioning¶
+Automatic Versioning: The artifact service automatically handles versioning. When you call save_artifact, the service determines the next available version number (typically starting from 0 and incrementing) for that specific filename and scope.
+Returned by save_artifact: The save_artifact method returns the integer version number that was assigned to the newly saved artifact.
+Retrieval:
+load_artifact(..., version=None) (default): Retrieves the latest available version of the artifact.
+load_artifact(..., version=N): Retrieves the specific version N.
+Listing Versions: The list_versions method (on the service, not context) can be used to find all existing version numbers for an artifact.
+Namespacing (Session vs. User)¶
+Concept: Artifacts can be scoped either to a specific session or more broadly to a user across all their sessions within the application. This scoping is determined by the filename format and handled internally by the ArtifactService.
+
+Default (Session Scope): If you use a plain filename like "report.pdf", the artifact is associated with the specific app_name, user_id, and session_id. It's only accessible within that exact session context.
+
+User Scope ("user:" prefix): If you prefix the filename with "user:", like "user:profile.png", the artifact is associated only with the app_name and user_id. It can be accessed or updated from any session belonging to that user within the app.
+
+
+Python
+Java
+
+# Example illustrating namespace difference (conceptual)
+
+# Session-specific artifact filename
+session_report_filename = "summary.txt"
+
+# User-specific artifact filename
+user_config_filename = "user:settings.json"
+
+# When saving 'summary.txt' via context.save_artifact,
+# it's tied to the current app_name, user_id, and session_id.
+
+# When saving 'user:settings.json' via context.save_artifact,
+# the ArtifactService implementation should recognize the "user:" prefix
+# and scope it to app_name and user_id, making it accessible across sessions for that user.
+
+These core concepts work together to provide a flexible system for managing binary data within the ADK framework.
+
+Interacting with Artifacts (via Context Objects)¶
+The primary way you interact with artifacts within your agent's logic (specifically within callbacks or tools) is through methods provided by the CallbackContext and ToolContext objects. These methods abstract away the underlying storage details managed by the ArtifactService.
+
+Prerequisite: Configuring the ArtifactService¶
+Before you can use any artifact methods via the context objects, you must provide an instance of a BaseArtifactService implementation (like InMemoryArtifactService or GcsArtifactService) when initializing your Runner.
+
+
+Python
+Java
+In Python, you provide this instance when initializing your Runner.
+
+
+from google.adk.runners import Runner
+from google.adk.artifacts import InMemoryArtifactService # Or GcsArtifactService
+from google.adk.agents import LlmAgent
+from google.adk.sessions import InMemorySessionService
+
+# Your agent definition
+agent = LlmAgent(name="my_agent", model="gemini-2.0-flash")
+
+# Instantiate the desired artifact service
+artifact_service = InMemoryArtifactService()
+
+# Provide it to the Runner
+runner = Runner(
+    agent=agent,
+    app_name="artifact_app",
+    session_service=InMemorySessionService(),
+    artifact_service=artifact_service # Service must be provided here
+)
+If no artifact_service is configured in the InvocationContext (which happens if it's not passed to the Runner), calling save_artifact, load_artifact, or list_artifacts on the context objects will raise a ValueError.
+
+Accessing Methods¶
+The artifact interaction methods are available directly on instances of CallbackContext (passed to agent and model callbacks) and ToolContext (passed to tool callbacks). Remember that ToolContext inherits from CallbackContext.
+
+Code Example:
+
+
+Python
+Java
+
+import google.genai.types as types
+from google.adk.agents.callback_context import CallbackContext # Or ToolContext
+
+async def save_generated_report_py(context: CallbackContext, report_bytes: bytes):
+    """Saves generated PDF report bytes as an artifact."""
+    report_artifact = types.Part.from_data(
+        data=report_bytes,
+        mime_type="application/pdf"
+    )
+    filename = "generated_report.pdf"
+
+    try:
+        version = await context.save_artifact(filename=filename, artifact=report_artifact)
+        print(f"Successfully saved Python artifact '{filename}' as version {version}.")
+        # The event generated after this callback will contain:
+        # event.actions.artifact_delta == {"generated_report.pdf": version}
+    except ValueError as e:
+        print(f"Error saving Python artifact: {e}. Is ArtifactService configured in Runner?")
+    except Exception as e:
+        # Handle potential storage errors (e.g., GCS permissions)
+        print(f"An unexpected error occurred during Python artifact save: {e}")
+
+# --- Example Usage Concept (Python) ---
+# async def main_py():
+#   callback_context: CallbackContext = ... # obtain context
+#   report_data = b'...' # Assume this holds the PDF bytes
+#   await save_generated_report_py(callback_context, report_data)
+
+Loading Artifacts¶
+Code Example:
+
+
+Python
+Java
+
+import google.genai.types as types
+from google.adk.agents.callback_context import CallbackContext # Or ToolContext
+
+async def process_latest_report_py(context: CallbackContext):
+    """Loads the latest report artifact and processes its data."""
+    filename = "generated_report.pdf"
+    try:
+        # Load the latest version
+        report_artifact = await context.load_artifact(filename=filename)
+
+        if report_artifact and report_artifact.inline_data:
+            print(f"Successfully loaded latest Python artifact '{filename}'.")
+            print(f"MIME Type: {report_artifact.inline_data.mime_type}")
+            # Process the report_artifact.inline_data.data (bytes)
+            pdf_bytes = report_artifact.inline_data.data
+            print(f"Report size: {len(pdf_bytes)} bytes.")
+            # ... further processing ...
+        else:
+            print(f"Python artifact '{filename}' not found.")
+
+        # Example: Load a specific version (if version 0 exists)
+        # specific_version_artifact = await context.load_artifact(filename=filename, version=0)
+        # if specific_version_artifact:
+        #     print(f"Loaded version 0 of '{filename}'.")
+
+    except ValueError as e:
+        print(f"Error loading Python artifact: {e}. Is ArtifactService configured?")
+    except Exception as e:
+        # Handle potential storage errors
+        print(f"An unexpected error occurred during Python artifact load: {e}")
+
+# --- Example Usage Concept (Python) ---
+# async def main_py():
+#   callback_context: CallbackContext = ... # obtain context
+#   await process_latest_report_py(callback_context)
+
+Listing Artifact Filenames¶
+Code Example:
+
+
+Python
+Java
+
+from google.adk.tools.tool_context import ToolContext
+
+def list_user_files_py(tool_context: ToolContext) -> str:
+    """Tool to list available artifacts for the user."""
+    try:
+        available_files = await tool_context.list_artifacts()
+        if not available_files:
+            return "You have no saved artifacts."
+        else:
+            # Format the list for the user/LLM
+            file_list_str = "\n".join([f"- {fname}" for fname in available_files])
+            return f"Here are your available Python artifacts:\n{file_list_str}"
+    except ValueError as e:
+        print(f"Error listing Python artifacts: {e}. Is ArtifactService configured?")
+        return "Error: Could not list Python artifacts."
+    except Exception as e:
+        print(f"An unexpected error occurred during Python artifact list: {e}")
+        return "Error: An unexpected error occurred while listing Python artifacts."
+
+# This function would typically be wrapped in a FunctionTool
+# from google.adk.tools import FunctionTool
+# list_files_tool = FunctionTool(func=list_user_files_py)
+
+These methods for saving, loading, and listing provide a convenient and consistent way to manage binary data persistence within ADK, whether using Python's context objects or directly interacting with the BaseArtifactService in Java, regardless of the chosen backend storage implementation.
+
+Available Implementations¶
+ADK provides concrete implementations of the BaseArtifactService interface, offering different storage backends suitable for various development stages and deployment needs. These implementations handle the details of storing, versioning, and retrieving artifact data based on the app_name, user_id, session_id, and filename (including the user: namespace prefix).
+
+InMemoryArtifactService¶
+Storage Mechanism:
+Python: Uses a Python dictionary (self.artifacts) held in the application's memory. The dictionary keys represent the artifact path, and the values are lists of types.Part, where each list element is a version.
+Java: Uses nested HashMap instances (private final Map<String, Map<String, Map<String, Map<String, List<Part>>>>> artifacts;) held in memory. The keys at each level are appName, userId, sessionId, and filename respectively. The innermost List<Part> stores the versions of the artifact, where the list index corresponds to the version number.
+Key Features:
+Simplicity: Requires no external setup or dependencies beyond the core ADK library.
+Speed: Operations are typically very fast as they involve in-memory map/dictionary lookups and list manipulations.
+Ephemeral: All stored artifacts are lost when the application process terminates. Data does not persist between application restarts.
+Use Cases:
+Ideal for local development and testing where persistence is not required.
+Suitable for short-lived demonstrations or scenarios where artifact data is purely temporary within a single run of the application.
+Instantiation:
+
+
+Python
+Java
+
+from google.adk.artifacts import InMemoryArtifactService
+
+# Simply instantiate the class
+in_memory_service_py = InMemoryArtifactService()
+
+# Then pass it to the Runner
+# runner = Runner(..., artifact_service=in_memory_service_py)
+
+GcsArtifactService¶
+Storage Mechanism: Leverages Google Cloud Storage (GCS) for persistent artifact storage. Each version of an artifact is stored as a separate object (blob) within a specified GCS bucket.
+Object Naming Convention: It constructs GCS object names (blob names) using a hierarchical path structure.
+Key Features:
+Persistence: Artifacts stored in GCS persist across application restarts and deployments.
+Scalability: Leverages the scalability and durability of Google Cloud Storage.
+Versioning: Explicitly stores each version as a distinct GCS object. The saveArtifact method in GcsArtifactService.
+Permissions Required: The application environment needs appropriate credentials (e.g., Application Default Credentials) and IAM permissions to read from and write to the specified GCS bucket.
+Use Cases:
+Production environments requiring persistent artifact storage.
+Scenarios where artifacts need to be shared across different application instances or services (by accessing the same GCS bucket).
+Applications needing long-term storage and retrieval of user or session data.
+Instantiation:
+
+
+Python
+Java
+
+from google.adk.artifacts import GcsArtifactService
+
+# Specify the GCS bucket name
+gcs_bucket_name_py = "your-gcs-bucket-for-adk-artifacts" # Replace with your bucket name
+
+try:
+    gcs_service_py = GcsArtifactService(bucket_name=gcs_bucket_name_py)
+    print(f"Python GcsArtifactService initialized for bucket: {gcs_bucket_name_py}")
+    # Ensure your environment has credentials to access this bucket.
+    # e.g., via Application Default Credentials (ADC)
+
+    # Then pass it to the Runner
+    # runner = Runner(..., artifact_service=gcs_service_py)
+
+except Exception as e:
+    # Catch potential errors during GCS client initialization (e.g., auth issues)
+    print(f"Error initializing Python GcsArtifactService: {e}")
+    # Handle the error appropriately - maybe fall back to InMemory or raise
+
+Choosing the appropriate ArtifactService implementation depends on your application's requirements for data persistence, scalability, and operational environment.
+
+Best Practices¶
+To use artifacts effectively and maintainably:
+
+Choose the Right Service: Use InMemoryArtifactService for rapid prototyping, testing, and scenarios where persistence isn't needed. Use GcsArtifactService (or implement your own BaseArtifactService for other backends) for production environments requiring data persistence and scalability.
+Meaningful Filenames: Use clear, descriptive filenames. Including relevant extensions (.pdf, .png, .wav) helps humans understand the content, even though the mime_type dictates programmatic handling. Establish conventions for temporary vs. persistent artifact names.
+Specify Correct MIME Types: Always provide an accurate mime_type when creating the types.Part for save_artifact. This is critical for applications or tools that later load_artifact to interpret the bytes data correctly. Use standard IANA MIME types where possible.
+Understand Versioning: Remember that load_artifact() without a specific version argument retrieves the latest version. If your logic depends on a specific historical version of an artifact, be sure to provide the integer version number when loading.
+Use Namespacing (user:) Deliberately: Only use the "user:" prefix for filenames when the data truly belongs to the user and should be accessible across all their sessions. For data specific to a single conversation or session, use regular filenames without the prefix.
+Error Handling:
+Always check if an artifact_service is actually configured before calling context methods (save_artifact, load_artifact, list_artifacts) – they will raise a ValueError if the service is None.
+Check the return value of load_artifact, as it will be None if the artifact or version doesn't exist. Don't assume it always returns a Part.
+Be prepared to handle exceptions from the underlying storage service, especially with GcsArtifactService (e.g., google.api_core.exceptions.Forbidden for permission issues, NotFound if the bucket doesn't exist, network errors).
+Size Considerations: Artifacts are suitable for typical file sizes, but be mindful of potential costs and performance impacts with extremely large files, especially with cloud storage. InMemoryArtifactService can consume significant memory if storing many large artifacts. Evaluate if very large data might be better handled through direct GCS links or other specialized storage solutions rather than passing entire byte arrays in-memory.
+Cleanup Strategy: For persistent storage like GcsArtifactService, artifacts remain until explicitly deleted. If artifacts represent temporary data or have a limited lifespan, implement a strategy for cleanup. This might involve:
+Using GCS lifecycle policies on the bucket.
+Building specific tools or administrative functions that utilize the artifact_service.delete_artifact method (note: delete is not exposed via context objects for safety).
+Carefully managing filenames to allow pattern-based deletion if needed.What is a Tool?¶
+In the context of ADK, a Tool represents a specific capability provided to an AI agent, enabling it to perform actions and interact with the world beyond its core text generation and reasoning abilities. What distinguishes capable agents from basic language models is often their effective use of tools.
+
+Technically, a tool is typically a modular code component—like a Python/ Java function, a class method, or even another specialized agent—designed to execute a distinct, predefined task. These tasks often involve interacting with external systems or data.
+
+Agent tool call
+
+Key Characteristics¶
+Action-Oriented: Tools perform specific actions, such as:
+
+Querying databases
+Making API requests (e.g., fetching weather data, booking systems)
+Searching the web
+Executing code snippets
+Retrieving information from documents (RAG)
+Interacting with other software or services
+Extends Agent capabilities: They empower agents to access real-time information, affect external systems, and overcome the knowledge limitations inherent in their training data.
+
+Execute predefined logic: Crucially, tools execute specific, developer-defined logic. They do not possess their own independent reasoning capabilities like the agent's core Large Language Model (LLM). The LLM reasons about which tool to use, when, and with what inputs, but the tool itself just executes its designated function.
+
+How Agents Use Tools¶
+Agents leverage tools dynamically through mechanisms often involving function calling. The process generally follows these steps:
+
+Reasoning: The agent's LLM analyzes its system instruction, conversation history, and user request.
+Selection: Based on the analysis, the LLM decides on which tool, if any, to execute, based on the tools available to the agent and the docstrings that describes each tool.
+Invocation: The LLM generates the required arguments (inputs) for the selected tool and triggers its execution.
+Observation: The agent receives the output (result) returned by the tool.
+Finalization: The agent incorporates the tool's output into its ongoing reasoning process to formulate the next response, decide the subsequent step, or determine if the goal has been achieved.
+Think of the tools as a specialized toolkit that the agent's intelligent core (the LLM) can access and utilize as needed to accomplish complex tasks.
+
+Tool Types in ADK¶
+ADK offers flexibility by supporting several types of tools:
+
+Function Tools: Tools created by you, tailored to your specific application's needs.
+Functions/Methods: Define standard synchronous functions or methods in your code (e.g., Python def).
+Agents-as-Tools: Use another, potentially specialized, agent as a tool for a parent agent.
+Long Running Function Tools: Support for tools that perform asynchronous operations or take significant time to complete.
+Built-in Tools: Ready-to-use tools provided by the framework for common tasks. Examples: Google Search, Code Execution, Retrieval-Augmented Generation (RAG).
+Third-Party Tools: Integrate tools seamlessly from popular external libraries. Examples: LangChain Tools, CrewAI Tools.
+Navigate to the respective documentation pages linked above for detailed information and examples for each tool type.
+
+Referencing Tool in Agent’s Instructions¶
+Within an agent's instructions, you can directly reference a tool by using its function name. If the tool's function name and docstring are sufficiently descriptive, your instructions can primarily focus on when the Large Language Model (LLM) should utilize the tool. This promotes clarity and helps the model understand the intended use of each tool.
+
+It is crucial to clearly instruct the agent on how to handle different return values that a tool might produce. For example, if a tool returns an error message, your instructions should specify whether the agent should retry the operation, give up on the task, or request additional information from the user.
+
+Furthermore, ADK supports the sequential use of tools, where the output of one tool can serve as the input for another. When implementing such workflows, it's important to describe the intended sequence of tool usage within the agent's instructions to guide the model through the necessary steps.
+
+Example¶
+The following example showcases how an agent can use tools by referencing their function names in its instructions. It also demonstrates how to guide the agent to handle different return values from tools, such as success or error messages, and how to orchestrate the sequential use of multiple tools to accomplish a task.
+
+
+Python
+Java
+
+from google.adk.agents import Agent
+from google.adk.tools import FunctionTool
+from google.adk.runners import Runner
+from google.adk.sessions import InMemorySessionService
+from google.genai import types
+
+APP_NAME="weather_sentiment_agent"
+USER_ID="user1234"
+SESSION_ID="1234"
+MODEL_ID="gemini-2.0-flash"
+
+# Tool 1
+def get_weather_report(city: str) -> dict:
+    """Retrieves the current weather report for a specified city.
+
+    Returns:
+        dict: A dictionary containing the weather information with a 'status' key ('success' or 'error') and a 'report' key with the weather details if successful, or an 'error_message' if an error occurred.
+    """
+    if city.lower() == "london":
+        return {"status": "success", "report": "The current weather in London is cloudy with a temperature of 18 degrees Celsius and a chance of rain."}
+    elif city.lower() == "paris":
+        return {"status": "success", "report": "The weather in Paris is sunny with a temperature of 25 degrees Celsius."}
+    else:
+        return {"status": "error", "error_message": f"Weather information for '{city}' is not available."}
+
+weather_tool = FunctionTool(func=get_weather_report)
+
+
+# Tool 2
+def analyze_sentiment(text: str) -> dict:
+    """Analyzes the sentiment of the given text.
+
+    Returns:
+        dict: A dictionary with 'sentiment' ('positive', 'negative', or 'neutral') and a 'confidence' score.
+    """
+    if "good" in text.lower() or "sunny" in text.lower():
+        return {"sentiment": "positive", "confidence": 0.8}
+    elif "rain" in text.lower() or "bad" in text.lower():
+        return {"sentiment": "negative", "confidence": 0.7}
+    else:
+        return {"sentiment": "neutral", "confidence": 0.6}
+
+sentiment_tool = FunctionTool(func=analyze_sentiment)
+
+
+# Agent
+weather_sentiment_agent = Agent(
+    model=MODEL_ID,
+    name='weather_sentiment_agent',
+    instruction="""You are a helpful assistant that provides weather information and analyzes the sentiment of user feedback.
+**If the user asks about the weather in a specific city, use the 'get_weather_report' tool to retrieve the weather details.**
+**If the 'get_weather_report' tool returns a 'success' status, provide the weather report to the user.**
+**If the 'get_weather_report' tool returns an 'error' status, inform the user that the weather information for the specified city is not available and ask if they have another city in mind.**
+**After providing a weather report, if the user gives feedback on the weather (e.g., 'That's good' or 'I don't like rain'), use the 'analyze_sentiment' tool to understand their sentiment.** Then, briefly acknowledge their sentiment.
+You can handle these tasks sequentially if needed.""",
+    tools=[weather_tool, sentiment_tool]
+)
+
+# Session and Runner
+session_service = InMemorySessionService()
+session = session_service.create_session(app_name=APP_NAME, user_id=USER_ID, session_id=SESSION_ID)
+runner = Runner(agent=weather_sentiment_agent, app_name=APP_NAME, session_service=session_service)
+
+
+# Agent Interaction
+def call_agent(query):
+    content = types.Content(role='user', parts=[types.Part(text=query)])
+    events = runner.run(user_id=USER_ID, session_id=SESSION_ID, new_message=content)
+
+    for event in events:
+        if event.is_final_response():
+            final_response = event.content.parts[0].text
+            print("Agent Response: ", final_response)
+
+call_agent("weather in london?")
+
+Tool Context¶
+For more advanced scenarios, ADK allows you to access additional contextual information within your tool function by including the special parameter tool_context: ToolContext. By including this in the function signature, ADK will automatically provide an instance of the ToolContext class when your tool is called during agent execution.
+
+The ToolContext provides access to several key pieces of information and control levers:
+
+state: State: Read and modify the current session's state. Changes made here are tracked and persisted.
+
+actions: EventActions: Influence the agent's subsequent actions after the tool runs (e.g., skip summarization, transfer to another agent).
+
+function_call_id: str: The unique identifier assigned by the framework to this specific invocation of the tool. Useful for tracking and correlating with authentication responses. This can also be helpful when multiple tools are called within a single model response.
+
+function_call_event_id: str: This attribute provides the unique identifier of the event that triggered the current tool call. This can be useful for tracking and logging purposes.
+
+auth_response: Any: Contains the authentication response/credentials if an authentication flow was completed before this tool call.
+
+Access to Services: Methods to interact with configured services like Artifacts and Memory.
+
+Note that you shouldn't include the tool_context parameter in the tool function docstring. Since ToolContext is automatically injected by the ADK framework after the LLM decides to call the tool function, it is not relevant for the LLM's decision-making and including it can confuse the LLM.
+
+State Management¶
+The tool_context.state attribute provides direct read and write access to the state associated with the current session. It behaves like a dictionary but ensures that any modifications are tracked as deltas and persisted by the session service. This enables tools to maintain and share information across different interactions and agent steps.
+
+Reading State: Use standard dictionary access (tool_context.state['my_key']) or the .get() method (tool_context.state.get('my_key', default_value)).
+
+Writing State: Assign values directly (tool_context.state['new_key'] = 'new_value'). These changes are recorded in the state_delta of the resulting event.
+
+State Prefixes: Remember the standard state prefixes:
+
+app:*: Shared across all users of the application.
+
+user:*: Specific to the current user across all their sessions.
+
+(No prefix): Specific to the current session.
+
+temp:*: Temporary, not persisted across invocations (useful for passing data within a single run call but generally less useful inside a tool context which operates between LLM calls).
+
+
+Python
+Java
+
+from google.adk.tools import ToolContext, FunctionTool
+
+def update_user_preference(preference: str, value: str, tool_context: ToolContext):
+    """Updates a user-specific preference."""
+    user_prefs_key = "user:preferences"
+    # Get current preferences or initialize if none exist
+    preferences = tool_context.state.get(user_prefs_key, {})
+    preferences[preference] = value
+    # Write the updated dictionary back to the state
+    tool_context.state[user_prefs_key] = preferences
+    print(f"Tool: Updated user preference '{preference}' to '{value}'")
+    return {"status": "success", "updated_preference": preference}
+
+pref_tool = FunctionTool(func=update_user_preference)
+
+# In an Agent:
+# my_agent = Agent(..., tools=[pref_tool])
+
+# When the LLM calls update_user_preference(preference='theme', value='dark', ...):
+# The tool_context.state will be updated, and the change will be part of the
+# resulting tool response event's actions.state_delta.
+
+Controlling Agent Flow¶
+The tool_context.actions attribute (ToolContext.actions() in Java) holds an EventActions object. Modifying attributes on this object allows your tool to influence what the agent or framework does after the tool finishes execution.
+
+skip_summarization: bool: (Default: False) If set to True, instructs the ADK to bypass the LLM call that typically summarizes the tool's output. This is useful if your tool's return value is already a user-ready message.
+
+transfer_to_agent: str: Set this to the name of another agent. The framework will halt the current agent's execution and transfer control of the conversation to the specified agent. This allows tools to dynamically hand off tasks to more specialized agents.
+
+escalate: bool: (Default: False) Setting this to True signals that the current agent cannot handle the request and should pass control up to its parent agent (if in a hierarchy). In a LoopAgent, setting escalate=True in a sub-agent's tool will terminate the loop.
+
+Example¶
+
+Python
+Java
+
+from google.adk.agents import Agent
+from google.adk.tools import FunctionTool
+from google.adk.runners import Runner
+from google.adk.sessions import InMemorySessionService
+from google.adk.tools import ToolContext
+from google.genai import types
+
+APP_NAME="customer_support_agent"
+USER_ID="user1234"
+SESSION_ID="1234"
+
+
+def check_and_transfer(query: str, tool_context: ToolContext) -> str:
+    """Checks if the query requires escalation and transfers to another agent if needed."""
+    if "urgent" in query.lower():
+        print("Tool: Detected urgency, transferring to the support agent.")
+        tool_context.actions.transfer_to_agent = "support_agent"
+        return "Transferring to the support agent..."
+    else:
+        return f"Processed query: '{query}'. No further action needed."
+
+escalation_tool = FunctionTool(func=check_and_transfer)
+
+main_agent = Agent(
+    model='gemini-2.0-flash',
+    name='main_agent',
+    instruction="""You are the first point of contact for customer support of an analytics tool. Answer general queries. If the user indicates urgency, use the 'check_and_transfer' tool.""",
+    tools=[check_and_transfer]
+)
+
+support_agent = Agent(
+    model='gemini-2.0-flash',
+    name='support_agent',
+    instruction="""You are the dedicated support agent. Mentioned you are a support handler and please help the user with their urgent issue."""
+)
+
+main_agent.sub_agents = [support_agent]
+
+# Session and Runner
+session_service = InMemorySessionService()
+session = session_service.create_session(app_name=APP_NAME, user_id=USER_ID, session_id=SESSION_ID)
+runner = Runner(agent=main_agent, app_name=APP_NAME, session_service=session_service)
+
+
+# Agent Interaction
+def call_agent(query):
+    content = types.Content(role='user', parts=[types.Part(text=query)])
+    events = runner.run(user_id=USER_ID, session_id=SESSION_ID, new_message=content)
+
+    for event in events:
+        if event.is_final_response():
+            final_response = event.content.parts[0].text
+            print("Agent Response: ", final_response)
+
+call_agent("this is urgent, i cant login")
+
+Explanation¶
+We define two agents: main_agent and support_agent. The main_agent is designed to be the initial point of contact.
+The check_and_transfer tool, when called by main_agent, examines the user's query.
+If the query contains the word "urgent", the tool accesses the tool_context, specifically tool_context.actions, and sets the transfer_to_agent attribute to support_agent.
+This action signals to the framework to transfer the control of the conversation to the agent named support_agent.
+When the main_agent processes the urgent query, the check_and_transfer tool triggers the transfer. The subsequent response would ideally come from the support_agent.
+For a normal query without urgency, the tool simply processes it without triggering a transfer.
+This example illustrates how a tool, through EventActions in its ToolContext, can dynamically influence the flow of the conversation by transferring control to another specialized agent.
+
+Authentication¶
+python_only
+
+ToolContext provides mechanisms for tools interacting with authenticated APIs. If your tool needs to handle authentication, you might use the following:
+
+auth_response: Contains credentials (e.g., a token) if authentication was already handled by the framework before your tool was called (common with RestApiTool and OpenAPI security schemes).
+
+request_credential(auth_config: dict): Call this method if your tool determines authentication is needed but credentials aren't available. This signals the framework to start an authentication flow based on the provided auth_config.
+
+get_auth_response(): Call this in a subsequent invocation (after request_credential was successfully handled) to retrieve the credentials the user provided.
+
+For detailed explanations of authentication flows, configuration, and examples, please refer to the dedicated Tool Authentication documentation page.
+
+Context-Aware Data Access Methods¶
+These methods provide convenient ways for your tool to interact with persistent data associated with the session or user, managed by configured services.
+
+list_artifacts() (or listArtifacts() in Java): Returns a list of filenames (or keys) for all artifacts currently stored for the session via the artifact_service. Artifacts are typically files (images, documents, etc.) uploaded by the user or generated by tools/agents.
+
+load_artifact(filename: str): Retrieves a specific artifact by its filename from the artifact_service. You can optionally specify a version; if omitted, the latest version is returned. Returns a google.genai.types.Part object containing the artifact data and mime type, or None if not found.
+
+save_artifact(filename: str, artifact: types.Part): Saves a new version of an artifact to the artifact_service. Returns the new version number (starting from 0).
+
+search_memory(query: str) python_only
+
+Queries the user's long-term memory using the configured memory_service. This is useful for retrieving relevant information from past interactions or stored knowledge. The structure of the SearchMemoryResponse depends on the specific memory service implementation but typically contains relevant text snippets or conversation excerpts.
+
+Example¶
+
+Python
+Java
+
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+from google.adk.tools import ToolContext, FunctionTool
+from google.genai import types
+
+
+def process_document(
+    document_name: str, analysis_query: str, tool_context: ToolContext
+) -> dict:
+    """Analyzes a document using context from memory."""
+
+    # 1. Load the artifact
+    print(f"Tool: Attempting to load artifact: {document_name}")
+    document_part = tool_context.load_artifact(document_name)
+
+    if not document_part:
+        return {"status": "error", "message": f"Document '{document_name}' not found."}
+
+    document_text = document_part.text  # Assuming it's text for simplicity
+    print(f"Tool: Loaded document '{document_name}' ({len(document_text)} chars).")
+
+    # 2. Search memory for related context
+    print(f"Tool: Searching memory for context related to: '{analysis_query}'")
+    memory_response = tool_context.search_memory(
+        f"Context for analyzing document about {analysis_query}"
+    )
+    memory_context = "\n".join(
+        [
+            m.events[0].content.parts[0].text
+            for m in memory_response.memories
+            if m.events and m.events[0].content
+        ]
+    )  # Simplified extraction
+    print(f"Tool: Found memory context: {memory_context[:100]}...")
+
+    # 3. Perform analysis (placeholder)
+    analysis_result = f"Analysis of '{document_name}' regarding '{analysis_query}' using memory context: [Placeholder Analysis Result]"
+    print("Tool: Performed analysis.")
+
+    # 4. Save the analysis result as a new artifact
+    analysis_part = types.Part.from_text(text=analysis_result)
+    new_artifact_name = f"analysis_{document_name}"
+    version = await tool_context.save_artifact(new_artifact_name, analysis_part)
+    print(f"Tool: Saved analysis result as '{new_artifact_name}' version {version}.")
+
+    return {
+        "status": "success",
+        "analysis_artifact": new_artifact_name,
+        "version": version,
+    }
+
+
+doc_analysis_tool = FunctionTool(func=process_document)
+
+# In an Agent:
+# Assume artifact 'report.txt' was previously saved.
+# Assume memory service is configured and has relevant past data.
+# my_agent = Agent(..., tools=[doc_analysis_tool], artifact_service=..., memory_service=...)
+
+By leveraging the ToolContext, developers can create more sophisticated and context-aware custom tools that seamlessly integrate with ADK's architecture and enhance the overall capabilities of their agents.
+
+Defining Effective Tool Functions¶
+When using a method or function as an ADK Tool, how you define it significantly impacts the agent's ability to use it correctly. The agent's Large Language Model (LLM) relies heavily on the function's name, parameters (arguments), type hints, and docstring / source code comments to understand its purpose and generate the correct call.
+
+Here are key guidelines for defining effective tool functions:
+
+Function Name:
+
+Use descriptive, verb-noun based names that clearly indicate the action (e.g., get_weather, searchDocuments, schedule_meeting).
+Avoid generic names like run, process, handle_data, or overly ambiguous names like doStuff. Even with a good description, a name like do_stuff might confuse the model about when to use the tool versus, for example, cancelFlight.
+The LLM uses the function name as a primary identifier during tool selection.
+Parameters (Arguments):
+
+Your function can have any number of parameters.
+Use clear and descriptive names (e.g., city instead of c, search_query instead of q).
+Provide type hints in Python for all parameters (e.g., city: str, user_id: int, items: list[str]). This is essential for ADK to generate the correct schema for the LLM.
+Ensure all parameter types are JSON serializable. All java primitives as well as standard Python types like str, int, float, bool, list, dict, and their combinations are generally safe. Avoid complex custom class instances as direct parameters unless they have a clear JSON representation.
+Do not set default values for parameters. E.g., def my_func(param1: str = "default"). Default values are not reliably supported or used by the underlying models during function call generation. All necessary information should be derived by the LLM from the context or explicitly requested if missing.
+self / cls Handled Automatically: Implicit parameters like self (for instance methods) or cls (for class methods) are automatically handled by ADK and excluded from the schema shown to the LLM. You only need to define type hints and descriptions for the logical parameters your tool requires the LLM to provide.
+Return Type:
+
+The function's return value must be a dictionary (dict) in Python or a Map in Java.
+If your function returns a non-dictionary type (e.g., a string, number, list), the ADK framework will automatically wrap it into a dictionary/Map like {'result': your_original_return_value} before passing the result back to the model.
+Design the dictionary/Map keys and values to be descriptive and easily understood by the LLM. Remember, the model reads this output to decide its next step.
+Include meaningful keys. For example, instead of returning just an error code like 500, return {'status': 'error', 'error_message': 'Database connection failed'}.
+It's a highly recommended practice to include a status key (e.g., 'success', 'error', 'pending', 'ambiguous') to clearly indicate the outcome of the tool execution for the model.
+Docstring / Source Code Comments:
+
+This is critical. The docstring is the primary source of descriptive information for the LLM.
+Clearly state what the tool does. Be specific about its purpose and limitations.
+Explain when the tool should be used. Provide context or example scenarios to guide the LLM's decision-making.
+Describe each parameter clearly. Explain what information the LLM needs to provide for that argument.
+Describe the structure and meaning of the expected dict return value, especially the different status values and associated data keys.
+Do not describe the injected ToolContext parameter. Avoid mentioning the optional tool_context: ToolContext parameter within the docstring description since it is not a parameter the LLM needs to know about. ToolContext is injected by ADK, after the LLM decides to call it.
+Example of a good definition:
+
+
+Python
+Java
+
+def lookup_order_status(order_id: str) -> dict:
+  """Fetches the current status of a customer's order using its ID.
+
+  Use this tool ONLY when a user explicitly asks for the status of
+  a specific order and provides the order ID. Do not use it for
+  general inquiries.
+
+  Args:
+      order_id: The unique identifier of the order to look up.
+
+  Returns:
+      A dictionary containing the order status.
+      Possible statuses: 'shipped', 'processing', 'pending', 'error'.
+      Example success: {'status': 'shipped', 'tracking_number': '1Z9...'}
+      Example error: {'status': 'error', 'error_message': 'Order ID not found.'}
+  """
+  # ... function implementation to fetch status ...
+  if status := fetch_status_from_backend(order_id):
+       return {"status": status.state, "tracking_number": status.tracking} # Example structure
+  else:
+       return {"status": "error", "error_message": f"Order ID {order_id} not found."}
+
+Simplicity and Focus:
+Keep Tools Focused: Each tool should ideally perform one well-defined task.
+Fewer Parameters are Better: Models generally handle tools with fewer, clearly defined parameters more reliably than those with many optional or complex ones.
+Use Simple Data Types: Prefer basic types (str, int, bool, float, List[str], in Python, or int, byte, short, long, float, double, boolean and char in Java) over complex custom classes or deeply nested structures as parameters when possible.
+Decompose Complex Tasks: Break down functions that perform multiple distinct logical steps into smaller, more focused tools. For instance, instead of a single update_user_profile(profile: ProfileObject) tool, consider separate tools like update_user_name(name: str), update_user_address(address: str), update_user_preferences(preferences: list[str]), etc. This makes it easier for the LLM to select and use the correct capability.
+By adhering to these guidelines, you provide the LLM with the clarity and structure it needs to effectively utilize your custom function tools, leading to more capable and reliable agent behavior.
+
+Toolsets: Grouping and Dynamically Providing Tools python_only¶
+Beyond individual tools, ADK introduces the concept of a Toolset via the BaseToolset interface (defined in google.adk.tools.base_toolset). A toolset allows you to manage and provide a collection of BaseTool instances, often dynamically, to an agent.
+
+This approach is beneficial for:
+
+Organizing Related Tools: Grouping tools that serve a common purpose (e.g., all tools for mathematical operations, or all tools interacting with a specific API).
+Dynamic Tool Availability: Enabling an agent to have different tools available based on the current context (e.g., user permissions, session state, or other runtime conditions). The get_tools method of a toolset can decide which tools to expose.
+Integrating External Tool Providers: Toolsets can act as adapters for tools coming from external systems, like an OpenAPI specification or an MCP server, converting them into ADK-compatible BaseTool objects.
+The BaseToolset Interface¶
+Any class acting as a toolset in ADK should implement the BaseToolset abstract base class. This interface primarily defines two methods:
+
+async def get_tools(...) -> list[BaseTool]: This is the core method of a toolset. When an ADK agent needs to know its available tools, it will call get_tools() on each BaseToolset instance provided in its tools list.
+
+It receives an optional readonly_context (an instance of ReadonlyContext). This context provides read-only access to information like the current session state (readonly_context.state), agent name, and invocation ID. The toolset can use this context to dynamically decide which tools to return.
+It must return a list of BaseTool instances (e.g., FunctionTool, RestApiTool).
+async def close(self) -> None: This asynchronous method is called by the ADK framework when the toolset is no longer needed, for example, when an agent server is shutting down or the Runner is being closed. Implement this method to perform any necessary cleanup, such as closing network connections, releasing file handles, or cleaning up other resources managed by the toolset.
+
+Using Toolsets with Agents¶
+You can include instances of your BaseToolset implementations directly in an LlmAgent's tools list, alongside individual BaseTool instances.
+
+When the agent initializes or needs to determine its available capabilities, the ADK framework will iterate through the tools list:
+
+If an item is a BaseTool instance, it's used directly.
+If an item is a BaseToolset instance, its get_tools() method is called (with the current ReadonlyContext), and the returned list of BaseTools is added to the agent's available tools.
+Example: A Simple Math Toolset¶
+Let's create a basic example of a toolset that provides simple arithmetic operations.
+
+
+# 1. Define the individual tool functions
+def add_numbers(a: int, b: int, tool_context: ToolContext) -> Dict[str, Any]:
+    """Adds two integer numbers.
+    Args:
+        a: The first number.
+        b: The second number.
+    Returns:
+        A dictionary with the sum, e.g., {'status': 'success', 'result': 5}
+    """
+    print(f"Tool: add_numbers called with a={a}, b={b}")
+    result = a + b
+    # Example: Storing something in tool_context state
+    tool_context.state["last_math_operation"] = "addition"
+    return {"status": "success", "result": result}
+
+
+def subtract_numbers(a: int, b: int) -> Dict[str, Any]:
+    """Subtracts the second number from the first.
+    Args:
+        a: The first number.
+        b: The second number.
+    Returns:
+        A dictionary with the difference, e.g., {'status': 'success', 'result': 1}
+    """
+    print(f"Tool: subtract_numbers called with a={a}, b={b}")
+    return {"status": "success", "result": a - b}
+
+
+# 2. Create the Toolset by implementing BaseToolset
+class SimpleMathToolset(BaseToolset):
+    def __init__(self, prefix: str = "math_"):
+        self.prefix = prefix
+        # Create FunctionTool instances once
+        self._add_tool = FunctionTool(
+            func=add_numbers,
+            name=f"{self.prefix}add_numbers",  # Toolset can customize names
+        )
+        self._subtract_tool = FunctionTool(
+            func=subtract_numbers, name=f"{self.prefix}subtract_numbers"
+        )
+        print(f"SimpleMathToolset initialized with prefix '{self.prefix}'")
+
+    async def get_tools(
+        self, readonly_context: Optional[ReadonlyContext] = None
+    ) -> List[BaseTool]:
+        print(f"SimpleMathToolset.get_tools() called.")
+        # Example of dynamic behavior:
+        # Could use readonly_context.state to decide which tools to return
+        # For instance, if readonly_context.state.get("enable_advanced_math"):
+        #    return [self._add_tool, self._subtract_tool, self._multiply_tool]
+
+        # For this simple example, always return both tools
+        tools_to_return = [self._add_tool, self._subtract_tool]
+        print(f"SimpleMathToolset providing tools: {[t.name for t in tools_to_return]}")
+        return tools_to_return
+
+    async def close(self) -> None:
+        # No resources to clean up in this simple example
+        print(f"SimpleMathToolset.close() called for prefix '{self.prefix}'.")
+        await asyncio.sleep(0)  # Placeholder for async cleanup if needed
+
+
+# 3. Define an individual tool (not part of the toolset)
+def greet_user(name: str = "User") -> Dict[str, str]:
+    """Greets the user."""
+    print(f"Tool: greet_user called with name={name}")
+    return {"greeting": f"Hello, {name}!"}
+
+
+greet_tool = FunctionTool(func=greet_user)
+
+# 4. Instantiate the toolset
+math_toolset_instance = SimpleMathToolset(prefix="calculator_")
+
+# 5. Define an agent that uses both the individual tool and the toolset
+calculator_agent = LlmAgent(
+    name="CalculatorAgent",
+    model="gemini-2.0-flash",  # Replace with your desired model
+    instruction="You are a helpful calculator and greeter. "
+    "Use 'greet_user' for greetings. "
+    "Use 'calculator_add_numbers' to add and 'calculator_subtract_numbers' to subtract. "
+    "Announce the state of 'last_math_operation' if it's set.",
+    tools=[greet_tool, math_toolset_instance],  # Individual tool  # Toolset instance
+)
+In this example:
+
+SimpleMathToolset implements BaseToolset and its get_tools() method returns FunctionTool instances for add_numbers and subtract_numbers. It also customizes their names using a prefix.
+The calculator_agent is configured with both an individual greet_tool and an instance of SimpleMathToolset.
+When calculator_agent is run, ADK will call math_toolset_instance.get_tools(). The agent's LLM will then have access to greet_user, calculator_add_numbers, and calculator_subtract_numbers to handle user requests.
+The add_numbers tool demonstrates writing to tool_context.state, and the agent's instruction mentions reading this state.
+The close() method is called to ensure any resources held by the toolset are released.
+Toolsets offer a powerful way to organize, manage, and dynamically provide collections of tools to your ADK agents, leading to more modular, maintainable, and adaptable agentic applications.In the Agent Development Kit (ADK), an Agent is a self-contained execution unit designed to act autonomously to achieve specific goals. Agents can perform tasks, interact with users, utilize external tools, and coordinate with other agents.
+
+The foundation for all agents in ADK is the BaseAgent class. It serves as the fundamental blueprint. To create functional agents, you typically extend BaseAgent in one of three main ways, catering to different needs – from intelligent reasoning to structured process control.
+
+Types of agents in ADK
+
+Core Agent Categories¶
+ADK provides distinct agent categories to build sophisticated applications:
+
+LLM Agents (LlmAgent, Agent): These agents utilize Large Language Models (LLMs) as their core engine to understand natural language, reason, plan, generate responses, and dynamically decide how to proceed or which tools to use, making them ideal for flexible, language-centric tasks. Learn more about LLM Agents...
+
+Workflow Agents (SequentialAgent, ParallelAgent, LoopAgent): These specialized agents control the execution flow of other agents in predefined, deterministic patterns (sequence, parallel, or loop) without using an LLM for the flow control itself, perfect for structured processes needing predictable execution. Explore Workflow Agents...
+
+Custom Agents: Created by extending BaseAgent directly, these agents allow you to implement unique operational logic, specific control flows, or specialized integrations not covered by the standard types, catering to highly tailored application requirements. Discover how to build Custom Agents...
+
+Choosing the Right Agent Type¶
+The following table provides a high-level comparison to help distinguish between the agent types. As you explore each type in more detail in the subsequent sections, these distinctions will become clearer.
+
+Feature	LLM Agent (LlmAgent)	Workflow Agent	Custom Agent (BaseAgent subclass)
+Primary Function	Reasoning, Generation, Tool Use	Controlling Agent Execution Flow	Implementing Unique Logic/Integrations
+Core Engine	Large Language Model (LLM)	Predefined Logic (Sequence, Parallel, Loop)	Custom Code
+Determinism	Non-deterministic (Flexible)	Deterministic (Predictable)	Can be either, based on implementation
+Primary Use	Language tasks, Dynamic decisions	Structured processes, Orchestration	Tailored requirements, Specific workflows
+Agents Working Together: Multi-Agent Systems¶
+While each agent type serves a distinct purpose, the true power often comes from combining them. Complex applications frequently employ multi-agent architectures where:
+
+LLM Agents handle intelligent, language-based task execution.
+Workflow Agents manage the overall process flow using standard patterns.
+Custom Agents provide specialized capabilities or rules needed for unique integrations.
+Understanding these core types is the first step toward building sophisticated, capable AI applications with ADK.
+
+What's Next?¶
+Now that you have an overview of the different agent types available in ADK, dive deeper into how they work and how to use them effectively:
+
+LLM Agents: Explore how to configure agents powered by large language models, including setting instructions, providing tools, and enabling advanced features like planning and code execution.
+Workflow Agents: Learn how to orchestrate tasks using SequentialAgent, ParallelAgent, and LoopAgent for structured and predictable processes.
+Custom Agents: Discover the principles of extending BaseAgent to build agents with unique logic and integrations tailored to your specific needs.
+Multi-Agents: Understand how to combine different agent types to create sophisticated, collaborative systems capable of tackling complex problems.
+Models: Learn about the different LLM integrations available and how to select the right model for your agents, now utilizig the above given all ADK related info, do for my codegenie project, create a detailed plan, with all in detailed like best optimized system architecture using the ADKs capabilities and features suitable for ymy application usecase
